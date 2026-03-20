@@ -19,11 +19,24 @@ enum class TokenType { //TODOS LOS TIPOS DE TOKENS
     //PALABRAS RESERVADAS V2
     PACIENTES,
     MEDICOS,
+    especialidad,
     CITAS,
     DIAGNOSTICOS,
+    medico,
+    cita,
+    diagnostico,
+    paciente,
+    codigoMed,
     // Especiales
     DESCONOCIDO,
-    FIN_ARCHIVO
+    FIN_ARCHIVO,
+    STRING,
+    //SIMBOLOS ESPECIALES
+    COMA,
+    DOS_PUNTOS,
+    CORCH_ABRE,
+    CORCH_CIERRA
+
 };
 
 // Convierte el enum a string legible para la tabla y retorna EL TIPO DE STRING
@@ -41,6 +54,8 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::MEDICOS:       return "MEDICOS";
     case TokenType::DIAGNOSTICOS:  return "DIAGNOSTICOS";
     case TokenType::CITAS:         return "CITAS";
+    case TokenType::especialidad: return "ESPECIALIDAD";
+
     default:                       return "DESCONOCIDO";
     }
 }

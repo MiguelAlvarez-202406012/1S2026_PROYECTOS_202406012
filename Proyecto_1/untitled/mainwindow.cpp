@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QDebug>
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -13,6 +14,9 @@
 #include <QHeaderView>
 #include <QFont>
 #include "LexicalAnalyzer.h"
+#include <string>
+#include <iostream>
+
 
 
 //INTERFAZ GRAFICA PARA EL ANALIZADOR
@@ -276,10 +280,14 @@ void MainWindow::cargarArchivo() {
 }
 
 void MainWindow::analizarArchivo() {
+    cout << "LECTURA COMPLETADA!" << endl;
     if (archivoActual.isEmpty()) return;
 
+
+        /// lectura de contenido
+        /// PARA LA LECTURA DEL CONTENIDO
     // Leer contenido del archivo
-    std::string contenido = editorTexto->toPlainText().toStdString();
+    std::string contenido = editorTexto->toPlainText().toStdString(); //ruta
 
     LexicalAnalyzer lexer(contenido);
     std::vector<Token> tokens = lexer.tokenize(); //traer la tokenizacion
@@ -316,6 +324,10 @@ void MainWindow::analizarArchivo() {
     int nErrores = lexer.errores.size();
     statusBar()->showMessage(QString("Analisis completado — %1 tokens, %2 errores léxicos.")
                                  .arg(nTokens).arg(nErrores));
+
+
+
+
 }
 
 void MainWindow::abrirReporte1() {

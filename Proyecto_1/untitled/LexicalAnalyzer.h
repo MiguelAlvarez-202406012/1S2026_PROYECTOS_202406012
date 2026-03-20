@@ -4,7 +4,14 @@
 #include "Token.h"
 #include <string>
 #include <vector>
+//Estructuras  para GUARDAR
+struct Medic{//medicos
+    string nombre;
+    string especialidad;
+    string codigo;
+};
 
+//ANALIZADOR LEXICO
 class LexicalAnalyzer {
 public:
 
@@ -12,6 +19,7 @@ public:
     //Constante para que no cambie
     // Retorna todos los tokens del archivo
     vector<Token> tokenize(); //declara vector para tokenizacion
+    vector<Medic> medStorage; //DEBE IR DENTRO Y PUBLICO
     // Errores acumulados durante el análisis
     struct ErrorLexico {
         string lexema;
@@ -33,7 +41,16 @@ private:
     void saltarBlancos(); // Ignora espacios, tabs, saltos de línea
     Token siguienteToken();        // AFD principal
     Token leerPalabraReservada(); // Reconoce HOSPITAL (y futuras), retorna
+    Token leerString(); //Lectura de strings
     void  registrarError(const string& lexema,const string& tipo,const string& desc);
+
+    //REGISTRAR DATOS
+    void registrarMedicos(const vector<Token>& tokens, int& pos);
+
 };
+
+
+
+
 
 #endif // LEXICALANALYZER_H

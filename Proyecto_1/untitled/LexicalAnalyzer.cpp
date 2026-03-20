@@ -2,6 +2,7 @@
 #include <cctype>
 #include <vector>
 #include <cctype>
+#include <QDebug>
 
 //SOLO DECLARA LAS FUNCIONAS A UTILZIAR
 //UTILIZACION DEL HEADER LexicalAnalyzer
@@ -14,6 +15,8 @@ LexicalAnalyzer::LexicalAnalyzer(const string& fuente)
                 //Resolucion de ambito
     : codigo(fuente), pos(0), linea(1), columna(1) {}
         //Codigo fuente, en que posicion se encentra
+
+//
 
 // ── Helpers ─────────────────────────────────────────────────────
 
@@ -45,6 +48,8 @@ void LexicalAnalyzer::registrarError(const string& lex,  const string& tipo,cons
 
 }
 
+
+
 // ── AFD Principal ────────────────────────────────────────────────
 
 Token LexicalAnalyzer::siguienteToken() { //PARA SIGUENTE TOKEN
@@ -62,6 +67,12 @@ Token LexicalAnalyzer::siguienteToken() { //PARA SIGUENTE TOKEN
     if (c == '{') { avanzar(); return { TokenType::LLAVE_ABRE,   "{", linIni, colIni }; } //SI CH es un Bracket { avanza y retona que es una llave
     if (c == '}') { avanzar(); return { TokenType::LLAVE_CIERRA, "}", linIni, colIni }; } //SI CH es un Bracket { avanza y retona que es una llave
     if (c == ';') { avanzar(); return { TokenType::PUNTO_COMA,   ";", linIni, colIni }; } //SI CH es un SEMICOLON ; avanza y retona que es una SEMICOLON
+    if (c == ':') { avanzar(); return { TokenType::DOS_PUNTOS,   ":", linIni, colIni }; }
+    if (c == ',') { avanzar(); return { TokenType::COMA,         ",", linIni, colIni }; }
+    if (c == '[') { avanzar(); return { TokenType::CORCH_ABRE, "[", linIni, colIni }; }
+    if (c == ']') { avanzar(); return { TokenType::CORCH_CIERRA, "]", linIni, colIni }; }
+    if (c == '"') { return leerString(); }  // Nueva función para strings
+
 
     // Palabra reservada o identificador
     if (std::isalpha((unsigned char)c) || c == '_') //SI ES PALABRA RESERVADA O ID
@@ -92,7 +103,7 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
     if (lexema == "HOSPITAL")
         return { TokenType::HOSPITAL, lexema, linIni, colIni };
     //CASOS
-    if(lexema == "PACIENTES")
+    if(lexema == "PACIENTES" )
         return {TokenType::PACIENTES,lexema,linIni,colIni};
     if(lexema == "MEDICOS")
         return {TokenType::MEDICOS,lexema,linIni,colIni};
@@ -100,29 +111,175 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
         return {TokenType::CITAS,lexema,linIni,colIni};
     if(lexema == "DIAGNOSTICOS")
         return {TokenType::DIAGNOSTICOS,lexema,linIni,colIni};
+    //Analizar las demas palabras reservadas
+    //MEDICO
+    if(lexema == "medico" )
+        return {TokenType::medico,lexema,linIni,colIni};
+    if(lexema == "especialidad")
+        return {TokenType::especialidad,lexema,linIni,colIni};
+    if(lexema == "codigo") //SI EL LEXEMA LEE CODIGO MED
+        return {TokenType::codigoMed,lexema,linIni,colIni};
 
 
-
-
-
+    //MEDICO
+    if(lexema == "cita" )
+        return {TokenType::cita,lexema,linIni,colIni};
+    if(lexema == "diagnostico" )
+        return {TokenType::diagnostico,lexema,linIni,colIni};
+    if(lexema == "paciente" )
+        return {TokenType::paciente,lexema,linIni,colIni};
     // No es una palabra reservada conocida → error
     registrarError(lexema, "Token no reconocido",
                    "'" + lexema + "' no es una palabra reservada válida en MedLang.");
     return { TokenType::DESCONOCIDO, lexema, linIni, colIni };
 }
+//DECLARACION DE FUNCION PARA LECTURA DE STRINGS
+Token LexicalAnalyzer::leerString(){
+    // ^ Puede utilizar las declaraciones de la clase lexicalAnalyzer
+    int linIn = linea;
+    int colIn = columna;
+    string lexema; //llegara con o sin contenido
+
+    avanzar();
+    char c = avanzar();
+    while(pos < (int)codigo.size() && c != '"'){
+        lexema += avanzar(); //agrega el char al contenido MIENTRAS NO SEAN COMILLAS
+        c = actual(); //c se vuelve actual
+    }
+    if(c == '"'){
+        avanzar();
+        return{TokenType::STRING,lexema,linIn,colIn}; //SI ENCUENTRA UNA COMILLA ENTONCES
+    }else{
+        registrarError(lexema,"String mal escrito o sin cerradura","Absencia de cerraduras");
+        return{TokenType::DESCONOCIDO,lexema,linIn,colIn};
+    }
+
+
+}
 
 // ── Tokenización completa ──────────────────────────────────────── //LEE LOS TOKENS
 
     vector<Token> LexicalAnalyzer::tokenize() {
-        vector<Token> tokens;
+        vector<Token> tokens; //invoca al vector de tokens de LexicaAnalyzer
     pos = 0; linea = 1; columna = 1;
     errores.clear();
-
+    medStorage.clear();
+     //Parseo GENERAL
     while (true) {
-        Token t = siguienteToken();
+        Token t = siguienteToken(); //lee os tokens
         if (t.tipo == TokenType::FIN_ARCHIVO) break;
         if (t.tipo != TokenType::DESCONOCIDO)
             tokens.push_back(t);
     }
-    return tokens;
+     //Parseo de Medicos, GENERA LOS TOKENS PARA MEDICO
+    int posTok = 0;
+    while(posTok < (int)tokens.size()){
+        if(tokens[posTok].tipo == TokenType::MEDICOS){
+            posTok++;
+            registrarMedicos(tokens,posTok);
+        }else{
+            posTok++;
+        }
+
+    }
+    return tokens;//retorno
 }
+
+// -- LECTURA DE DATOS --
+
+    void LexicalAnalyzer::registrarMedicos (const vector<Token>& tokens, int& pos){
+        qDebug() << "DOCTOR!" ;
+        // Verificar que hay una llave de apertura
+        if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::LLAVE_ABRE) {
+            pos++; // Saltar '{'
+
+            // Mientras no lleguemos al cierre de la sección
+            while (pos < (int)tokens.size() && tokens[pos].tipo != TokenType::LLAVE_CIERRA) {
+
+                // Buscar la palabra clave "medico"
+                if (tokens[pos].tipo == TokenType::medico) {
+                    Medic nuevoMedico;
+                    pos++; // Saltar "medico"
+                    if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::DOS_PUNTOS) {
+                        pos++;
+                    }
+                    // Leer nombre del médico
+                    if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::STRING) {
+                        nuevoMedico.nombre = tokens[pos].lexema;
+                        qDebug() << "SE AGREGO NOMBRE";
+                        pos++;
+                    }
+                    if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::CORCH_ABRE) { //CUANDO DETECTE CORCH_ABRE
+                        pos++;
+                    }
+
+                    while (pos < (int)tokens.size() && tokens[pos].tipo != TokenType::CORCH_CIERRA) { //MIENTRAS NO ENCUENTRE CORCH_CIERRA
+
+                        if (tokens[pos].tipo == TokenType::especialidad) {
+                            pos++; // Saltar
+
+                            if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::DOS_PUNTOS) {
+                                pos++;
+                            }
+
+                            // El valor puede ser CARDIOLOGIA, NEUROLOGIA o STRING
+                            if (pos < (int)tokens.size() &&
+                                (tokens[pos].tipo == TokenType::STRING)) {
+                                nuevoMedico.especialidad = tokens[pos].lexema;
+                                pos++;
+                            }
+                        }
+                        else if (tokens[pos].tipo == TokenType::codigoMed) {
+                            pos++; // Saltar "codigo"
+
+                            if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::DOS_PUNTOS) {
+                                pos++;
+                            }
+
+                            if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::STRING) {
+                                nuevoMedico.codigo = tokens[pos].lexema;
+                                pos++;
+                            }
+                        }
+                        else if (tokens[pos].tipo == TokenType::COMA) {
+                            pos++; // Saltar comas
+                        }
+                        else {
+                            pos++; // Saltar tokens desconocidos
+                        }
+                    }
+
+                    if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::CORCH_CIERRA) {
+                        pos++;
+                    }
+
+
+                    if (pos < (int)tokens.size() &&
+                        (tokens[pos].tipo == TokenType::COMA ||tokens[pos].tipo == TokenType::PUNTO_COMA)) {
+                        pos++;
+                    }
+
+                    // Agregar Medico al Struct
+                    medStorage.push_back(nuevoMedico);
+                }
+                else {
+                    //Sigue la busqueda
+                    pos++;
+                }
+            }
+
+
+            if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::LLAVE_CIERRA) {
+                pos++;
+            }
+        }
+        //Console Log para mostrar lo que se Agrego
+        qDebug() << "Se agregaron: " << medStorage.size() << " Medicos";
+        for(int i = 0; i < medStorage.size(); i++){
+            qDebug() << " CODIGO Medico: "<< medStorage[i].codigo ;
+            qDebug() << " Nombre Medico: "<< medStorage[i].nombre ;
+            qDebug() << " ESPECIALIDAD Medico: "<< medStorage[i].especialidad ;
+
+        }
+
+    }

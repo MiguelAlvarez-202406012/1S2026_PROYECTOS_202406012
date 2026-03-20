@@ -26,6 +26,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Token.h
         LexicalAnalyzer.h
         LexicalAnalyzer.cpp
+        Containers.h
+        ClinicContainers.h
+        ClinicContainers.h
+        ClinicContainers.h
+        ClinicContainers.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET EjemploProyecto1 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
