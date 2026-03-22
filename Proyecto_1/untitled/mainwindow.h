@@ -8,6 +8,9 @@
 #include <QLabel>
 #include <QTabWidget>
 #include <QStatusBar>
+#include <vector>
+#include <string>
+#include "LexicalAnalyzer.h"
 
 class MainWindow : public QMainWindow { //Hereda de una ventana principal
     Q_OBJECT //   SEÑAL PARA OTROS QTWIDGETS
@@ -25,6 +28,19 @@ private slots: //todo los metodos que responden eventos
     void abrirReporte4();
 
 private:
+
+    //GENERACION
+    //CONTENEDOR PARA VECTORES DE LEXICAL
+    vector<Medic> medicos;//MEDICOS
+    //SE AGREGARAN MAS EN EL FUTURO
+
+
+    //REPORTES
+    QString clientHist(); //HISTORIAL DE PACIENTES
+    QString reportMed(); // EL MEDICO Y SU TIPO DE CARGA
+    QString citasReport(); //REPORTE DE CITAS Y POSIBLES CONFLICTOS
+    QString hospitalStats(); // REPORTE GENERAL (EASIEST)
+
     // Panel izquierdo - editor
     QTextEdit    *editorTexto;
     QLabel       *labelArchivo;

@@ -26,8 +26,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Token.h
         LexicalAnalyzer.h
         LexicalAnalyzer.cpp
-        Containers.h
-        ClinicContainers.h
+
+
         ClinicContainers.h
         ClinicContainers.h
         ClinicContainers.h

@@ -35,7 +35,9 @@ enum class TokenType { //TODOS LOS TIPOS DE TOKENS
     COMA,
     DOS_PUNTOS,
     CORCH_ABRE,
-    CORCH_CIERRA
+    CORCH_CIERRA,
+    CARDIOLOGIA,
+    NEUROLOGIA
 
 };
 
@@ -55,6 +57,13 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::DIAGNOSTICOS:  return "DIAGNOSTICOS";
     case TokenType::CITAS:         return "CITAS";
     case TokenType::especialidad: return "ESPECIALIDAD";
+    case TokenType::CARDIOLOGIA: return "ESPECIALIDAD";
+    case TokenType::NEUROLOGIA: return "ESPECIALIDAD";
+
+        //NEST
+
+    case TokenType::STRING: return "STRING";
+
 
     default:                       return "DESCONOCIDO";
     }

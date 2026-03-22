@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Médicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .fecha {
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .total {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 LISTADO DE MÉDICOS</h1>
+        <div class="fecha">
+            Fecha de generación: 22/03/2026 17:00:24
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Médico</th>
+                    <th>Especialidad</th>
+                    <th>Código</th>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td>1</td>
+            <td>Dr. Roberto Juárez</td>
+            <td>CARDIOLOGIA</td>
+            <td>MED-001</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Dra. Ana Solís</td>
+            <td>NEUROLOGIA</td>
+            <td>MED-002</td>
+        </tr>
+
+            </tbody>
+        </table>
+
+        <div class="total">
+            Total de médicos: 2
+        </div>
+    </div>
+</body>
+</html>
+    

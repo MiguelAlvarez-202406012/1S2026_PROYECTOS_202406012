@@ -119,6 +119,10 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
         return {TokenType::especialidad,lexema,linIni,colIni};
     if(lexema == "codigo") //SI EL LEXEMA LEE CODIGO MED
         return {TokenType::codigoMed,lexema,linIni,colIni};
+    if(lexema == "CARDIOLOGIA")
+        return {TokenType::CARDIOLOGIA,lexema,linIni,colIni};
+    if(lexema == "NEUROLOGIA")
+        return {TokenType::NEUROLOGIA,lexema,linIni,colIni};
 
 
     //MEDICO
@@ -135,26 +139,24 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
 }
 //DECLARACION DE FUNCION PARA LECTURA DE STRINGS
 Token LexicalAnalyzer::leerString(){
-    // ^ Puede utilizar las declaraciones de la clase lexicalAnalyzer
     int linIn = linea;
     int colIn = columna;
-    string lexema; //llegara con o sin contenido
+    string lexema; //llegara con cualquier contenido
 
-    avanzar();
-    char c = avanzar();
-    while(pos < (int)codigo.size() && c != '"'){
-        lexema += avanzar(); //agrega el char al contenido MIENTRAS NO SEAN COMILLAS
-        c = actual(); //c se vuelve actual
-    }
-    if(c == '"'){
-        avanzar();
-        return{TokenType::STRING,lexema,linIn,colIn}; //SI ENCUENTRA UNA COMILLA ENTONCES
-    }else{
-        registrarError(lexema,"String mal escrito o sin cerradura","Absencia de cerraduras");
-        return{TokenType::DESCONOCIDO,lexema,linIn,colIn};
+    avanzar(); // Saltara la comilla inicial
+
+    while (pos < (int)codigo.size() && actual() != '"') {
+        lexema += avanzar();
     }
 
-
+    // Verificar que se encontró la comilla de cierre
+    if (actual() == '"') {
+        avanzar(); // Saltar la comilla final
+        return { TokenType::STRING, lexema, linIn, colIn };
+    } else {
+        registrarError(lexema, "String mal formado", "Falta comilla de cierre");
+        return { TokenType::DESCONOCIDO, lexema, linIn, colIn };
+    }
 }
 
 // ── Tokenización completa ──────────────────────────────────────── //LEE LOS TOKENS
@@ -186,13 +188,11 @@ Token LexicalAnalyzer::leerString(){
 }
 
 // -- LECTURA DE DATOS --
-
     void LexicalAnalyzer::registrarMedicos (const vector<Token>& tokens, int& pos){
         qDebug() << "DOCTOR!" ;
         // Verificar que hay una llave de apertura
         if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::LLAVE_ABRE) {
             pos++; // Saltar '{'
-
             // Mientras no lleguemos al cierre de la sección
             while (pos < (int)tokens.size() && tokens[pos].tipo != TokenType::LLAVE_CIERRA) {
 
@@ -214,8 +214,8 @@ Token LexicalAnalyzer::leerString(){
                     }
 
                     while (pos < (int)tokens.size() && tokens[pos].tipo != TokenType::CORCH_CIERRA) { //MIENTRAS NO ENCUENTRE CORCH_CIERRA
-
-                        if (tokens[pos].tipo == TokenType::especialidad) {
+                            //RECONOCE EL TIPO DE ESPECIALIDAD
+                        if (tokens[pos].tipo == TokenType::especialidad) { //SI ENCUENTRA LA PALABRA RESERVADA
                             pos++; // Saltar
 
                             if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::DOS_PUNTOS) {
@@ -224,8 +224,10 @@ Token LexicalAnalyzer::leerString(){
 
                             // El valor puede ser CARDIOLOGIA, NEUROLOGIA o STRING
                             if (pos < (int)tokens.size() &&
-                                (tokens[pos].tipo == TokenType::STRING)) {
-                                nuevoMedico.especialidad = tokens[pos].lexema;
+                                tokens[pos].tipo == TokenType::STRING ||
+                                tokens[pos].tipo == TokenType::CARDIOLOGIA ||
+                                tokens[pos].tipo == TokenType::NEUROLOGIA) {
+                                nuevoMedico.especialidad = tokens[pos].lexema; //ASIGNA LA ESPECIALIDAD
                                 pos++;
                             }
                         }

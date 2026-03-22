@@ -13,10 +13,16 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QFont>
+#include <QDateTime>
 #include "LexicalAnalyzer.h"
 #include <string>
-#include <iostream>
 
+#include <QMessageBox> //POPUP
+#include <QFile>//GENERAR
+#include <QTextStream>//OUTPUT O INPUT
+#include <QFileInfo>
+#include <QDateTime>
+#include <QDir>
 
 
 //INTERFAZ GRAFICA PARA EL ANALIZADOR
@@ -90,7 +96,7 @@ void MainWindow::setupUI() {
     QHBoxLayout *layoutReportes = new QHBoxLayout(grupoReportes);
 
     btnReporte1 = new QPushButton("Historial\nPacientes");
-    btnReporte2 = new QPushButton("Carga\nMedicos");
+    btnReporte2 = new QPushButton("Carga\nMedicos"); //DEBUGER
     btnReporte3 = new QPushButton("Agenda\nde Citas");
     btnReporte4 = new QPushButton("Estadistico\nGeneral");
 
@@ -280,7 +286,6 @@ void MainWindow::cargarArchivo() {
 }
 
 void MainWindow::analizarArchivo() {
-    cout << "LECTURA COMPLETADA!" << endl;
     if (archivoActual.isEmpty()) return;
 
 
@@ -291,6 +296,9 @@ void MainWindow::analizarArchivo() {
 
     LexicalAnalyzer lexer(contenido);
     std::vector<Token> tokens = lexer.tokenize(); //traer la tokenizacion
+
+    //GUARDAR
+    medicos = lexer.medStorage; // vector de mainWindow = vector de lexical <- DONDE HAY DATOS
 
     // Poblar tabla de tokens
     tablaTokens->setRowCount(0);
@@ -330,19 +338,167 @@ void MainWindow::analizarArchivo() {
 
 }
 
-void MainWindow::abrirReporte1() {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(
-        QFileInfo(archivoActual).absolutePath() + "/reporte_pacientes.html"));
+QString MainWindow::clientHist(){ //CREAR HTML
+
+
 }
-void MainWindow::abrirReporte2() {
+
+void MainWindow::abrirReporte1() { //GENERAR REPORTE PACIENTES
+
+
+
+}
+
+QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA EL CONTENEDOR DE MAINWINDOW.CPP
+    QString html = R"(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Médicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .fecha {
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .total {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 LISTADO DE MÉDICOS</h1>
+        <div class="fecha">
+            Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Médico</th>
+                    <th>Especialidad</th>
+                    <th>Código</th>
+                </tr>
+            </thead>
+            <tbody>
+    )";
+
+    // Aquí deberías iterar sobre tus médicos
+    // Por ahora, mostramos datos de ejemplo
+    for (size_t i = 0; i < medicos.size(); i++) {
+        html += "        <tr>\n";
+        html += "            <td>" + QString::number(i + 1) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(medicos[i].nombre) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(medicos[i].especialidad) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(medicos[i].codigo) + "</td>\n";
+        html += "        </tr>\n";
+    }
+
+    html += R"(
+            </tbody>
+        </table>
+
+        <div class="total">
+            Total de médicos: )" + QString::number(medicos.size()) + R"(
+        </div>
+    </div>
+</body>
+</html>
+    )";
+
+    return html;
+}
+
+
+void MainWindow::abrirReporte2() { //GENERAR MEDS
+    /*
+     *     QMessageBox::information(this, "DEBUG!", "Se Genero Listado de Medicos!");
     QDesktopServices::openUrl(QUrl::fromLocalFile(
         QFileInfo(archivoActual).absolutePath() + "/reporte_medicos.html"));
+    */
+    qInfo() << "Generar Reporte Medicos";
+
+    if (archivoActual.isEmpty()) {
+        qWarning() << "ERROR: No hay archivo cargado";
+        QMessageBox::warning(this, "Error", "Primero carga un archivo .med");
+        return;
+    }
+
+    if(!archivoActual.isEmpty()){
+        QString ruta = QFileInfo(archivoActual).absolutePath();
+        QString path = ruta + "/reporte_med.html"; //Ruta donde se almacenara
+
+        QDir dir(ruta);
+        if(!dir.exists()){
+            QMessageBox::critical(this, "Error", "La ruta: " + ruta + " No existe");
+            return; //defunde la fucnbion
+        }
+
+
+        QString htmlContents = reportMed(); //genera el reporte con datos
+        QFile archivo(path); //guarda el archivo
+        if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&archivo);
+            out << htmlContents;
+            archivo.close();
+            //POPUP
+            QMessageBox::information(this, "Reporte Medicos!","Reporte de médicos generado correctamente.");
+
+        }else{
+            QMessageBox::information(this, "ERROR, Reporte Medicos!","Ocurrio un error al cargar el archivo");
+        }
+    }
+
+
 }
+
+
 void MainWindow::abrirReporte3() {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(
-        QFileInfo(archivoActual).absolutePath() + "/reporte_citas.html"));
+
 }
 void MainWindow::abrirReporte4() {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(
-        QFileInfo(archivoActual).absolutePath() + "/reporte_estadistico.html"));
+
 }
