@@ -30,8 +30,11 @@ private slots: //todo los metodos que responden eventos
 private:
 
     //GENERACION
-    //CONTENEDOR PARA VECTORES DE LEXICAL
+    //CONTENEDOR PARA VECTORES DE LEXICALANALYZER
     vector<Medic> medicos;//MEDICOS
+    vector<Patient> pacientes;
+    vector<Citas> cita;
+    vector<Diagnostic> diagnosticos;
     //SE AGREGARAN MAS EN EL FUTURO
 
 
@@ -66,6 +69,10 @@ private:
     void setupTablaTokens();
     void setupTablaErrores();
     void aplicarEstilos();
+
+    //futuros void
+
+
 };
 
 #endif // MAINWINDOW_H

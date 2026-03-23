@@ -28,7 +28,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         LexicalAnalyzer.cpp
 
 
-        ClinicContainers.h
+
         ClinicContainers.h
         ClinicContainers.h
     )

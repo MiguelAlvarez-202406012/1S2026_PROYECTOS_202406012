@@ -137,6 +137,8 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
                    "'" + lexema + "' no es una palabra reservada válida en MedLang.");
     return { TokenType::DESCONOCIDO, lexema, linIni, colIni };
 }
+
+
 //DECLARACION DE FUNCION PARA LECTURA DE STRINGS
 Token LexicalAnalyzer::leerString(){
     int linIn = linea;
@@ -184,10 +186,19 @@ Token LexicalAnalyzer::leerString(){
         }
 
     }
+    //paseo pacientes
+
+
+    //parseo citas
+
+
+    //paseo Diagnostico
+
     return tokens;//retorno
 }
 
 // -- LECTURA DE DATOS --
+        //! REGISTRAR MEDICOS
     void LexicalAnalyzer::registrarMedicos (const vector<Token>& tokens, int& pos){
         qDebug() << "DOCTOR!" ;
         // Verificar que hay una llave de apertura
@@ -285,3 +296,16 @@ Token LexicalAnalyzer::leerString(){
         }
 
     }
+        //! REGISTRAR Citas
+    void LexicalAnalyzer::registrarCitas(const vector<Token>& tokens, int& pos){
+
+    }
+        //! REGISTRAR Pacientes
+    void LexicalAnalyzer::registrarPacientes(const vector<Token>& tokens, int& pos){
+
+    }
+        //! REGISTRAR Diagnosticos
+    void LexicalAnalyzer::registrarDiagnosticos(const vector<Token>& tokens, int& pos){
+
+    }
+

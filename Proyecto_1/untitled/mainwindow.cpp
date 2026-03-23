@@ -285,7 +285,7 @@ void MainWindow::cargarArchivo() {
     statusBar()->showMessage("Archivo cargado: " + ruta + " — Presiona 'Analizar' para comenzar.");
 }
 
-void MainWindow::analizarArchivo() {
+void MainWindow::analizarArchivo() { //ALTERACION
     if (archivoActual.isEmpty()) return;
 
 
@@ -297,8 +297,13 @@ void MainWindow::analizarArchivo() {
     LexicalAnalyzer lexer(contenido);
     std::vector<Token> tokens = lexer.tokenize(); //traer la tokenizacion
 
-    //GUARDAR
+    //GUARDAR DE LEXER A MAIN
     medicos = lexer.medStorage; // vector de mainWindow = vector de lexical <- DONDE HAY DATOS
+    pacientes = lexer.patStorage; //
+    diagnosticos = lexer.diagStorage;
+    cita = lexer.citStorage;
+
+    //DEBEN IR EN ORDEN
 
     // Poblar tabla de tokens
     tablaTokens->setRowCount(0);
@@ -338,16 +343,21 @@ void MainWindow::analizarArchivo() {
 
 }
 
+/////////////////////////////// REPORTE: HIST CLIENTE ///////////////////////////////////////////////////////////////////////////
+
 QString MainWindow::clientHist(){ //CREAR HTML
 
 
 }
 
 void MainWindow::abrirReporte1() { //GENERAR REPORTE PACIENTES
+    //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
 
 
 
 }
+
+/////////////////////////////// REPORTE: MEDICOS Y CARGA ///////////////////////////////////////////////////////////////////////////
 
 QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA EL CONTENEDOR DE MAINWINDOW.CPP
     QString html = R"(
@@ -495,10 +505,26 @@ void MainWindow::abrirReporte2() { //GENERAR MEDS
 
 }
 
+/////////////////////////////// REPORTE: CITAS ///////////////////////////////////////////////////////////////////////////
 
-void MainWindow::abrirReporte3() {
+QString MainWindow::citasReport(){
+     //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
+
 
 }
-void MainWindow::abrirReporte4() {
+
+void MainWindow::abrirReporte3() { //REPORTE DE CITAS
+
+}
+
+/////////////////////////////// REPORTE: GENERAL HOSPITAL ///////////////////////////////////////////////////////////////////////////
+
+QString MainWindow::hospitalStats(){
+     //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
+
+
+}
+
+void MainWindow::abrirReporte4() { // REPORTE GENERAL
 
 }

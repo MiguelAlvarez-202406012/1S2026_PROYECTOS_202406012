@@ -8,7 +8,7 @@ HOSPITAL {
     MEDICOS {
     medico: "Dr. Roberto Juarez" [especialidad: CARDIOLOGIA, codigo:
     "MED-001"],
-    medico: "Dra. Ana Solís" [especialidad: NEUROLOGIA, codigo:
+    medico: "Dra. Ana Solis" [especialidad: NEUROLOGIA, codigo:
     "MED-002"],
     };
     CITAS {
