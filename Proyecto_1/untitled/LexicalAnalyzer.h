@@ -78,6 +78,7 @@ private:
     Token siguienteToken();        // AFD principal
     Token leerPalabraReservada(); // Reconoce HOSPITAL (y futuras), retorna
     Token leerString(); //Lectura de strings
+    Token leerNum(); //lectura de numeros o guiones
     void  registrarError(const string& lexema,const string& tipo,const string& desc);
 
     //REGISTRAR DATOS EN LEXICALANALYZER

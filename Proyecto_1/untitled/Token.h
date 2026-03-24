@@ -11,6 +11,7 @@ using namespace std;
 //TODOS LOS TIPOS
 enum class TokenType { //TODOS LOS TIPOS DE TOKENS
     // Palabra reservada raíz
+    NUMERO,
     HOSPITAL,
     // Delimitadores
     LLAVE_ABRE,     // {
@@ -18,13 +19,21 @@ enum class TokenType { //TODOS LOS TIPOS DE TOKENS
     PUNTO_COMA,     // ;
     //PALABRAS RESERVADAS V2
     PACIENTES,
+    edad,
+    tipo_sangre,
+    habitacion,
     MEDICOS,
     especialidad,
     CITAS,
+    DATE,
+    HOUR,
     DIAGNOSTICOS,
     medico,
     cita,
     diagnostico,
+    condicion,
+    medicamento,
+    dosis,
     paciente,
     codigoMed,
     // Especiales
@@ -37,14 +46,27 @@ enum class TokenType { //TODOS LOS TIPOS DE TOKENS
     CORCH_ABRE,
     CORCH_CIERRA,
     CARDIOLOGIA,
-    NEUROLOGIA
+    NEUROLOGIA,
+    PEDIATRIA,
+    CIRUGIA,
+    MEDICINA_GENERAL,
+    ONCOLOGIA,
+    fecha,
+    hora,
+
+    //TOKENS PARA DIAGNOSTICO
+    DIARIA,
+    CADA_8_HORAS,
+    CADA_12_HORAS,
+    SEMANAL
+
 
 };
 
 // Convierte el enum a string legible para la tabla y retorna EL TIPO DE STRING
 inline string tokenTypeToString(TokenType t) { //RETORNA
     switch (t) {
-
+        //SI NO INCLUYE COMILLAS ES UN TOKEN
         //de la clase::ValorDeLaClase
     case TokenType::HOSPITAL:      return "PALABRA_RESERVADA"; //Viene de... :: de donde viene que trae
     case TokenType::LLAVE_ABRE:    return "LLAVE_ABRE";
@@ -57,9 +79,22 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::DIAGNOSTICOS:  return "DIAGNOSTICOS";
     case TokenType::CITAS:         return "CITAS";
     case TokenType::especialidad: return "ESPECIALIDAD";
+
+    //ESPECIALIDAD
     case TokenType::CARDIOLOGIA: return "ESPECIALIDAD";
     case TokenType::NEUROLOGIA: return "ESPECIALIDAD";
+    case TokenType::PEDIATRIA: return "ESPECIALIDAD";
+    case TokenType::CIRUGIA: return "ESPECIALIDAD";
+    case TokenType::MEDICINA_GENERAL: return "ESPECIALIDAD";
+    case TokenType::ONCOLOGIA: return "ESPECIALIDAD";
+    //DOSIS
+    case TokenType::DIARIA: return "DOSIS";
+    case TokenType::CADA_8_HORAS: return "DOSIS";
+    case TokenType::CADA_12_HORAS: return "DOSIS";
+    case TokenType::SEMANAL: return "DOSIS";
 
+    case TokenType::DATE: return "FECHA";
+    case TokenType::HOUR: return "HORA";
         //NEST
 
     case TokenType::STRING: return "STRING";
