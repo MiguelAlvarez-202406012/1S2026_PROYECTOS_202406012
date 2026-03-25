@@ -238,8 +238,13 @@ Token LexicalAnalyzer::leerNum(){ //LECTURA DE NUMEROS
     vector<Token> LexicalAnalyzer::tokenize() {
         vector<Token> tokens; //invoca al vector de tokens de LexicaAnalyzer
     pos = 0; linea = 1; columna = 1;
+
+    //Limpieza de vectores
     errores.clear();
     medStorage.clear();
+    diagStorage.clear();
+    patStorage.clear();
+    citStorage.clear();
      //Parseo GENERAL
     while (true) {
         Token t = siguienteToken(); //lee os tokens

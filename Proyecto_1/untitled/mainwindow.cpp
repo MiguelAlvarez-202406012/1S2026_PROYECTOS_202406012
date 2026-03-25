@@ -297,7 +297,7 @@ void MainWindow::analizarArchivo() { //ALTERACION
     LexicalAnalyzer lexer(contenido);
     std::vector<Token> tokens = lexer.tokenize(); //traer la tokenizacion
 
-    //GUARDAR DE LEXER A MAIN
+    //GUARDAR DE LEXER A MAIN, LECTURA DE VECTORES DE LEXICAL ANALIZER A MAINWINDOW
     medicos = lexer.medStorage; // vector de mainWindow = vector de lexical <- DONDE HAY DATOS
     pacientes = lexer.patStorage; //
     diagnosticos = lexer.diagStorage;
@@ -338,22 +338,52 @@ void MainWindow::analizarArchivo() { //ALTERACION
     statusBar()->showMessage(QString("Analisis completado — %1 tokens, %2 errores léxicos.")
                                  .arg(nTokens).arg(nErrores));
 
-
-
-
+    QMessageBox::information(this, "Lectura compeltada!","Lectura de archivo .med completado!");
 }
 
 /////////////////////////////// REPORTE: HIST CLIENTE ///////////////////////////////////////////////////////////////////////////
 
-QString MainWindow::clientHist(){ //CREAR HTML
+QString MainWindow::clientHist(){ //CREAR HTML DE HISTORIAL DE PACIENTES
 
 
 }
 
 void MainWindow::abrirReporte1() { //GENERAR REPORTE PACIENTES
-    //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
+    //REPORTE DE CITAS
+
+    //GENERAR CITAS
+    qInfo() << "Generando reporte Historial Pacientes ";
+
+    if (archivoActual.isEmpty()) {
+        qWarning() << "ERROR: No hay archivo cargado";
+        QMessageBox::warning(this, "Error", "Primero carga un archivo .med");
+        return;
+    }
+
+    if(!archivoActual.isEmpty()){
+        QString ruta = QFileInfo(archivoActual).absolutePath();
+        QString path = ruta + "/reporte_historial_pacientes.html"; //Ruta donde se almacenara
+
+        QDir dir(ruta);
+        if(!dir.exists()){
+            QMessageBox::critical(this, "Error", "La ruta: " + ruta + " No existe");
+            return; //defunde la fucnbion
+        }
 
 
+        QString htmlContents = clientHist(); //genera el reporte con datos
+        QFile archivo(path); //guarda el archivo
+        if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&archivo);
+            out << htmlContents;
+            archivo.close();
+            //POPUP
+            QMessageBox::information(this, "Historial Pacientes!","Reporte de Historial de Pacientes Generado correctamente correctamente.");
+
+        }else{
+            QMessageBox::information(this, "ERROR, Historial Pacientes!","Ocurrio un error al GENERAR el archivo");
+        }
+    }
 
 }
 
@@ -498,7 +528,7 @@ void MainWindow::abrirReporte2() { //GENERAR MEDS
             QMessageBox::information(this, "Reporte Medicos!","Reporte de médicos generado correctamente.");
 
         }else{
-            QMessageBox::information(this, "ERROR, Reporte Medicos!","Ocurrio un error al cargar el archivo");
+            QMessageBox::information(this, "ERROR, Reporte Medicos!","Ocurrio un error al GENERAR el archivo");
         }
     }
 
@@ -507,7 +537,7 @@ void MainWindow::abrirReporte2() { //GENERAR MEDS
 
 /////////////////////////////// REPORTE: CITAS ///////////////////////////////////////////////////////////////////////////
 
-QString MainWindow::citasReport(){
+QString MainWindow::citasReport(){ //HTML CITAS
      //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
 
 
@@ -515,16 +545,88 @@ QString MainWindow::citasReport(){
 
 void MainWindow::abrirReporte3() { //REPORTE DE CITAS
 
+    //GENERAR CITAS
+    qInfo() << "Generando reporte Citas ";
+
+    if (archivoActual.isEmpty()) {
+        qWarning() << "ERROR: No hay archivo cargado";
+        QMessageBox::warning(this, "Error", "Primero carga un archivo .med");
+        return;
+    }
+
+    if(!archivoActual.isEmpty()){
+        QString ruta = QFileInfo(archivoActual).absolutePath();
+        QString path = ruta + "/reporte_citas.html"; //Ruta donde se almacenara
+
+        QDir dir(ruta);
+        if(!dir.exists()){
+            QMessageBox::critical(this, "Error", "La ruta: " + ruta + " No existe");
+            return; //defunde la fucnbion
+        }
+
+
+        QString htmlContents = citasReport(); //genera el reporte con datos
+        QFile archivo(path); //guarda el archivo
+        if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&archivo);
+            out << htmlContents;
+            archivo.close();
+            //POPUP
+            QMessageBox::information(this, "Citas!","Reporte de Citas generado correctamente.");
+
+        }else{
+            QMessageBox::information(this, "ERROR, Reporte Citas!","Ocurrio un error al GENERAR el archivo");
+        }
+    }
+
+
+
 }
 
 /////////////////////////////// REPORTE: GENERAL HOSPITAL ///////////////////////////////////////////////////////////////////////////
 
-QString MainWindow::hospitalStats(){
-     //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
+QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
 
 
 }
 
 void MainWindow::abrirReporte4() { // REPORTE GENERAL
+
+    //GENERAR REPORTE PACIENTES
+    //REPORTE DE CITAS
+
+    //GENERAR CITAS
+    qInfo() << "Generando reporte Historial Pacientes ";
+
+    if (archivoActual.isEmpty()) {
+        qWarning() << "ERROR: No hay archivo cargado";
+        QMessageBox::warning(this, "Error", "Primero carga un archivo .med");
+        return;
+    }
+
+    if(!archivoActual.isEmpty()){
+        QString ruta = QFileInfo(archivoActual).absolutePath();
+        QString path = ruta + "/reporte_g_hospital.html"; //Ruta donde se almacenara
+
+        QDir dir(ruta);
+        if(!dir.exists()){
+            QMessageBox::critical(this, "Error", "La ruta: " + ruta + " No existe");
+            return; //defunde la fucnbion
+        }
+
+
+        QString htmlContents = hospitalStats(); //genera el reporte con datos
+        QFile archivo(path); //guarda el archivo
+        if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&archivo);
+            out << htmlContents;
+            archivo.close();
+            //POPUP
+            QMessageBox::information(this, "Historial Pacientes!","Reporte de Historial de Pacientes Generado correctamente correctamente.");
+
+        }else{
+            QMessageBox::information(this, "ERROR, Historial Pacientes!","Ocurrio un error al GENERAR el archivo");
+        }
+    }
 
 }

@@ -79,7 +79,6 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::DIAGNOSTICOS:  return "DIAGNOSTICOS";
     case TokenType::CITAS:         return "CITAS";
     case TokenType::especialidad: return "ESPECIALIDAD";
-
     //ESPECIALIDAD
     case TokenType::CARDIOLOGIA: return "ESPECIALIDAD";
     case TokenType::NEUROLOGIA: return "ESPECIALIDAD";
@@ -96,7 +95,6 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::DATE: return "FECHA";
     case TokenType::HOUR: return "HORA";
         //NEST
-
     case TokenType::STRING: return "STRING";
 
 
