@@ -33,6 +33,11 @@ private slots: //todo los metodos que responden eventos
     int returnMeds();
     int returnPacient();
     int returnCita();
+    int returnDiag();
+    double returnProm();
+    string mayorCarga();
+    string mayorPreS(); //Medicamento con mayor prescritura
+
 
 
 private:
@@ -43,6 +48,7 @@ private:
     vector<Patient> pacientes;
     vector<Citas> cita;
     vector<Diagnostic> diagnosticos;
+    vector<ErrorLexico> lexicalError;
     //SE AGREGARAN MAS EN EL FUTURO
 
 
@@ -54,6 +60,7 @@ private:
     QString lexicalErrors();
 
     // Panel izquierdo - editor
+    QLabel    *tituloPrograma;
     QTextEdit    *editorTexto;
     QLabel       *labelArchivo;
 

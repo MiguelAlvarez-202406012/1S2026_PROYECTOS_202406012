@@ -72,9 +72,20 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::LLAVE_ABRE:    return "LLAVE_ABRE";
     case TokenType::LLAVE_CIERRA:  return "LLAVE_CIERRA";
     case TokenType::PUNTO_COMA:    return "PUNTO_COMA";
+    case TokenType::CORCH_CIERRA: return "CORCHETE_CIERRA";
+    case TokenType::CORCH_ABRE: return "CORCHETE_CIERRA";
+    case TokenType::DOS_PUNTOS: return "DOS_PUNTOS";
+
     case TokenType::FIN_ARCHIVO:   return "FIN_ARCHIVO";
         //IMPLEMENTACION 18/03
     case TokenType::PACIENTES:     return "PACIENTES";
+    case TokenType::paciente: return "paciente";
+    case TokenType::edad: return "edad";
+    case TokenType::tipo_sangre: return "Tipo de Sangre";
+    case TokenType::habitacion: return "habitacion";
+    case TokenType::cita: return"cita";
+
+
     case TokenType::MEDICOS:       return "MEDICOS";
     case TokenType::DIAGNOSTICOS:  return "DIAGNOSTICOS";
     case TokenType::CITAS:         return "CITAS";
@@ -86,6 +97,10 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
     case TokenType::CIRUGIA: return "ESPECIALIDAD";
     case TokenType::MEDICINA_GENERAL: return "ESPECIALIDAD";
     case TokenType::ONCOLOGIA: return "ESPECIALIDAD";
+    //MEDICOS
+    case TokenType::medico: return "medico";
+    case TokenType::codigoMed: return "codigo-Medico";
+
     //DOSIS
     case TokenType::DIARIA: return "DOSIS";
     case TokenType::CADA_8_HORAS: return "DOSIS";
@@ -94,8 +109,10 @@ inline string tokenTypeToString(TokenType t) { //RETORNA
 
     case TokenType::DATE: return "FECHA";
     case TokenType::HOUR: return "HORA";
+    case TokenType::hora: return "hora_L";
         //NEST
     case TokenType::STRING: return "STRING";
+    case TokenType::NUMERO: return "NUMERO";
 
 
     default:                       return "DESCONOCIDO";

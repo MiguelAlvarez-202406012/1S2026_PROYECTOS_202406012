@@ -38,6 +38,14 @@ struct Diagnostic{
     string dosis; //Tipo de dosis DIARIA,CADA_N_HORAS
 };
 
+struct ErrorLexico {
+    string lexema;
+    string tipoError;
+    string descripcion;
+    int linea;
+    int columna;
+};
+
 
 
 //ANALIZADOR LEXICO
@@ -57,13 +65,7 @@ public:
     vector<Token> tokenize(); //declara vector para tokenizacion
 
     // Errores acumulados durante el análisis
-    struct ErrorLexico {
-        string lexema;
-        string tipoError;
-        string descripcion;
-        int linea;
-        int columna;
-    };
+
     vector<ErrorLexico> errores;
 
 private:

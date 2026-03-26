@@ -33,10 +33,15 @@ int conflicts;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    setWindowTitle("MED ANALYZER (LEXER)");
-    setMinimumSize(1200, 750);
+    //VENTANA PRINCIPAL
+    setWindowTitle("MEDICAL ANALYZER (HUSAC)");
+    setFixedSize(720, 460);
     setupUI();
     aplicarEstilos();
+
+    setWindowIcon(QIcon("resources/MED.ico"));
+
+
 }
 
 MainWindow::~MainWindow() {}
@@ -45,18 +50,15 @@ void MainWindow::setupUI() {
     // Widget central
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
-
     QVBoxLayout *layoutPrincipal = new QVBoxLayout(central);
     layoutPrincipal->setSpacing(8);
-    layoutPrincipal->setContentsMargins(10, 10, 10, 10);
-
+    layoutPrincipal->setContentsMargins(15, 10, 10, 10);
     // ── Barra superior con botones ──────────────────────────────
     QHBoxLayout *barraBotones = new QHBoxLayout();
-
     btnCargar  = new QPushButton("Cargar Archivo .med");
     btnAnalizar = new QPushButton("Analizar");
     btnAnalizar->setEnabled(false);
-
+    tituloPrograma = new QLabel("ANALIZADOR MEDICO");
     labelArchivo = new QLabel("Ningun archivo cargado");
     labelArchivo->setStyleSheet("color: #888; font-style: italic;");
 
@@ -159,7 +161,7 @@ void MainWindow::aplicarEstilos() {
         }
         QWidget {
             background-color: #FFFFFF;
-            color: #cdd6f4;
+            color: #000000;
             font-family: 'Segoe UI', sans-serif;
             font-size: 13px;
         }
@@ -268,7 +270,6 @@ void MainWindow::cargarArchivo() {
         this, "Abrir archivo MedLang", "", "Archivos MedLang (*.med);;Todos los archivos (*)");
 
     if (ruta.isEmpty()) return;
-
     QFile archivo(ruta);
     if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::critical(this, "Error", "No se pudo abrir el archivo.");
@@ -310,6 +311,7 @@ void MainWindow::analizarArchivo() { //ALTERACION
     pacientes = lexer.patStorage; //
     diagnosticos = lexer.diagStorage;
     cita = lexer.citStorage;
+    lexicalError = lexer.errores;
 
     //DEBEN IR EN ORDEN
 
@@ -361,7 +363,7 @@ QString MainWindow::clientHist(){ //CREAR HTML DE HISTORIAL DE PACIENTES
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Médicos</title>
+    <title>Historial Pacientes</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -783,7 +785,7 @@ QString MainWindow::citasReport(){ //HTML CITAS
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Médicos</title>
+    <title>Agenda de Citas</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -997,6 +999,133 @@ int MainWindow::returnCita(){
     return cita.size();
 }
 
+int MainWindow::returnDiag(){
+
+    return diagnosticos.size();
+}
+
+double MainWindow::returnProm(){
+    int edadTotal = 0;
+
+    //recoger edades
+    for(int a =0; a< pacientes.size();a++){
+        int edadPicker = 0;
+        edadPicker = stoi(pacientes[a].edad); //nombre mas pedorro para un string a integer
+        edadTotal += edadPicker;
+    }
+
+    double prom = edadTotal/pacientes.size();
+    return prom;
+}
+
+string MainWindow::mayorPreS(){
+    string mayorPres;
+    int maxFrec = 0;
+    //TOCA USAR MAP ME CAGO EN TODO
+    if(diagnosticos.empty()){
+        return "NO HAY MEDICAMENTOS REGISTRADOS";
+    }
+    //mapa sin orden
+    //Almacena datos sin ordenarlos
+    unordered_map<string,int> frecuenciaMed;
+
+
+    for(int d =0; d<diagnosticos.size();d++){
+        if(!diagnosticos[d].medicamento.empty()){ //si no esta vacio el espacio de medicamento
+            frecuenciaMed[diagnosticos[d].medicamento]++;
+        }
+    }
+
+    if(frecuenciaMed.empty()){
+        return "NO HAY MEDICAMENTOS REGISTRADOS";
+    }
+
+    //foreach para los dos datos
+
+    for(const auto& [medicamento,frecuencia]: frecuenciaMed){
+        if(frecuencia > maxFrec){
+            maxFrec = frecuencia;
+            mayorPres = medicamento;
+        }
+    }
+    return mayorPres + " || Veces Recetada: " + to_string(maxFrec);
+
+}
+
+
+string MainWindow::mayorCarga(){
+
+    int CARDIOLOGIA;
+    int NEUROLOGIA;
+    int PEDIATRIA;
+    int CIRUGIA;
+    int MEDICINA_GENERAL;
+    int ONCOLOGIA;
+
+
+    //REVISAR POR CITAS LUEGO BUSCAR EL NOMBRE DEL DOCTOR Y SU ESPECIALIDAD, ir sumando las especialidades aparte y finalmente comparar cada una la mayor sera la que salga del string;
+    for (int cit = 0; cit < cita.size(); ++cit) {
+        for(int m = 0; m < medicos.size(); ++m){
+            if(medicos[m].nombre == cita[cit].nombre_dr){
+            //Si al leer el vector de medicos coincide la cita
+            //ACA VIENE UN IF FEO
+            if(medicos[m].especialidad == "CARDIOLOGIA")
+                CARDIOLOGIA++;
+            }else if(medicos[m].especialidad == "NEUROLOGIA"){
+                NEUROLOGIA++;
+            }else if(medicos[m].especialidad == "PEDIATRIA"){
+                PEDIATRIA++;
+            }else if(medicos[m].especialidad == "CIRUGIA"){
+                CIRUGIA++;
+            }else if(medicos[m].especialidad == "MEDICINA_GENERAL"){
+                MEDICINA_GENERAL++;
+            }else if(medicos[m].especialidad == "ONCOLOGIA"){
+                ONCOLOGIA++;
+            }
+        }
+    }
+    //FIN DE IF
+
+    if(CARDIOLOGIA > NEUROLOGIA &&
+       CARDIOLOGIA > PEDIATRIA &&
+        CARDIOLOGIA > CIRUGIA &&
+        CARDIOLOGIA > MEDICINA_GENERAL &&
+        CARDIOLOGIA > ONCOLOGIA){
+        return "CARDIOLOGIA";
+    }else if(NEUROLOGIA > CARDIOLOGIA &&
+               NEUROLOGIA > PEDIATRIA &&
+               NEUROLOGIA > CIRUGIA &&
+               NEUROLOGIA > MEDICINA_GENERAL &&
+               NEUROLOGIA > ONCOLOGIA){
+        return "NEUROLOGIA";
+    }else if(PEDIATRIA > CARDIOLOGIA &&
+               PEDIATRIA > NEUROLOGIA &&
+               PEDIATRIA > CIRUGIA &&
+               PEDIATRIA > MEDICINA_GENERAL &&
+               PEDIATRIA > ONCOLOGIA){
+        return "PEDIATRIA";
+    }else if(CIRUGIA > CARDIOLOGIA &&
+               CIRUGIA > NEUROLOGIA &&
+               CIRUGIA > PEDIATRIA &&
+               CIRUGIA > MEDICINA_GENERAL &&
+               CIRUGIA > ONCOLOGIA){
+        return "CIRUGIA";
+    }else if(MEDICINA_GENERAL > CARDIOLOGIA &&
+               MEDICINA_GENERAL > NEUROLOGIA &&
+               MEDICINA_GENERAL > CIRUGIA &&
+               MEDICINA_GENERAL > PEDIATRIA &&
+               MEDICINA_GENERAL > ONCOLOGIA){
+        return "MEDICINA_GENERAL";
+    }else if(ONCOLOGIA > CARDIOLOGIA &&
+               ONCOLOGIA > NEUROLOGIA &&
+               ONCOLOGIA > CIRUGIA &&
+               ONCOLOGIA > MEDICINA_GENERAL &&
+               ONCOLOGIA > PEDIATRIA){
+        return "ONCOLOGIA";
+    }
+
+    return "DESCONOCIDO";
+}
 
 QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
 
@@ -1007,7 +1136,7 @@ QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Médicos</title>
+    <title>Reporte General</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -1126,27 +1255,23 @@ QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
                 </tr>
                 <tr>
                     <td>PACIENTES CON DIAGNOSTICOS ACTIVOS</td>
-                    <td>)" + "NA" + R"(</td>
+                    <td>)" + QString::number(returnDiag()) + R"(</td>
                 </tr>
                 <tr>
                     <td>MEDICAMENTO CON MAS PREESCRITURAS</td>
-                    <td>)" + "NA" + R"(</td>
+                    <td>)" + QString::fromStdString(mayorPreS()) + R"(</td>
                 </tr>
                 <tr>
                     <td>ESPECIALIDAD CON MAYOR CARGA DE CITAS</td>
-                    <td>)" + "NA" + R"(</td>
+                    <td>)" + QString::fromStdString(mayorCarga()) + R"(</td>
                 </tr>
                 <tr>
                     <td>EDAD PROMEDIO DE PACIENTES</td>
-                    <td>)" + "NA" + R"(</td>
+                    <td>)" + QString::number(returnProm()) + R"(</td>
                 </tr>
 
             </tbody>
         </table>
-
-
-
-
 
         <table>
             <thead>
@@ -1163,8 +1288,105 @@ QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
         <tbody>
     )";
     //Contenido General
+    //CADA TR es TABLE ROW
+    // |_> TD es el contenido que se desplaza ala derecha
+    //DEBO ITERAR POR CADA TABLE ROW
+
+    set<string>especialidades;
+    //LECTURA POR ESPECIALIDAD
+
+    for(const auto& med : medicos){
+        if(!med.especialidad.empty()){ //si en el pivote, encuentra una estructura y especialidad no esta vacio
+            especialidades.insert(med.especialidad);
+        }
+
+    }
+    //LECTURA POR MAP
+    unordered_map<string,int>c_medicos; //Almacenan las especialidades reconocidas por el set
+    unordered_map<string,int>c_citas;
+    unordered_map<string,int>c_pacientes;
+    for(const auto& esp_a : especialidades){
+        c_medicos[esp_a]=0;
+        c_citas[esp_a]=0;
+        c_pacientes[esp_a]=0;
+        //cada nueva especialidad encontrada sera con valor 0 en cada una
+        // si encuentra 9 especialidades, reconocera esas 9 pero actualmente con valor 0
+    }
+    //Contar medicos por especialidad
+
+    for(const auto& howMed : medicos){
+        c_medicos[howMed.especialidad]++;
+        //conteo por especialidad
+    }
+
+    //contar citas por especialidad
+
+    for(const auto& howCita : cita){ //recorre las citas
+        for(const auto& howMed : medicos){ //busca la especialidad
+            if(howMed.nombre == howCita.nombre_dr){ //si el nombre del medico coincide con el de la cita
+                c_citas[howMed.especialidad]++;
+                break;
+                //conteo por especialidad
+            }
+        }
+    }
+
+    //contar pacientes por especialidad de medicos quienes atiende
+    unordered_map<string, string> med_especial; //
+    unordered_map<string, set<string>> patient_especial; //
+                //medico como llave,especialidad como valor
+    for (const auto& medico : medicos) {
+        med_especial[medico.nombre] = medico.especialidad;
+        //registra el nombre del medico con su valor de especialidad
+        //para cada nombre del medico en el map, se le reconocera su especialidad
+    }
+
+    for (const auto& cita : cita) {
+        string especialidad = med_especial[cita.nombre_dr]; //trae la especialidad segun el nombre del doctor
+        patient_especial[especialidad].insert(cita.nombre_p); //segun la especialidad la inserta a patient_especial
+    }
+
+    // Contar
+    for (const auto& [esp, pacientesSet] : patient_especial) { //pivotes de paciente especial
+        c_pacientes[esp] = pacientesSet.size();
+    }
 
 
+
+    foreach (const auto& esp, especialidades) {        html += "        <tr>\n";
+        string ocupaciones;
+        int numMeds = c_medicos[esp];//segun la especialidad muestra el numero que fue aumentando
+        int numCitas = c_citas[esp]; //segun la especialidad muestra el numero que fue aumentando
+        int numPac = c_pacientes[esp]; //segun la especialidad muestra el numero que fue aumentando
+
+        //Nivel de ocupacion por especialidad
+        double occ = (numMeds > 0) ?
+        static_cast<double>(numCitas) / numMeds : 0;
+
+        if(occ <= 2){
+            ocupaciones = "BAJA";
+        }else if(occ <= 5){
+            ocupaciones = "MEDIANA";
+        }else if(occ <= 7){
+            ocupaciones = "ALTA";
+        }else if(occ <= 10){
+            ocupaciones = "SATURADO";
+        }
+
+
+        html += "        <td>" + QString::fromStdString(esp) + "</td>\n"; //NOMBRE
+        html += "        <td>" + QString::number(numMeds) + "</td>\n"; //NOMBRE
+        html += "        <td>" + QString::number(numCitas) + "</td>\n"; //NOMBRE
+        html += "        <td>" + QString::number(numPac) + "</td>\n"; //NOMBRE
+        html += "        <td>" + QString::fromStdString(ocupaciones) + "</td>\n"; //NOMBRE
+        html += "        </tr>\n";
+
+
+    }
+
+
+
+    //RESUMIR HTML
     html += R"(
             </tbody>
         </table>
@@ -1267,6 +1489,13 @@ QString MainWindow::lexicalErrors(){ //GENERACION DE HTML GENERAL HOSPITAL
             padding: 12px;
             text-align: left;
         }
+        .CRIT{
+            background-color: #FF0000;
+            color: white;
+            padding: 12px;
+            text-align: left;
+
+        }
 
 
         td {
@@ -1308,7 +1537,17 @@ QString MainWindow::lexicalErrors(){ //GENERACION DE HTML GENERAL HOSPITAL
         <tbody>
     )";
     //Iteracion para Errores lexicos
+    for(int e =0; e< lexicalError.size() ; e++ ){
+        html += "            <td>" + QString::number(e + 1) + "</td>\n"; //NUMERO
+        html += "            <td>" + QString::fromStdString(lexicalError[e].lexema) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(lexicalError[e].tipoError) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(lexicalError[e].descripcion) + "</td>\n";
+        html += "            <td>" + QString::number(lexicalError[e].linea) + "</td>\n";
+        html += "            <td>" + QString::number(lexicalError[e].columna) + "</td>\n";
+        html += "            <td>" + QString::fromStdString("CRITICO") + "</td class='CRIT'>\n";
+         html += "        </tr>\n";
 
+    }
 
     html += R"(
             </tbody>

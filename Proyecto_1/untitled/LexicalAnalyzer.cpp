@@ -333,6 +333,7 @@ Token LexicalAnalyzer::leerNum(){ //LECTURA DE NUMEROS
                                 tokens[pos].tipo == TokenType::ONCOLOGIA){
                                 nuevoMedico.especialidad = tokens[pos].lexema; //ASIGNA LA ESPECIALIDAD
                                 pos++;
+                                qDebug() << "SE AGREGO CATEGORIA DE MEDICO";
                             }
                         }
                         else if (tokens[pos].tipo == TokenType::codigoMed) {
@@ -344,6 +345,7 @@ Token LexicalAnalyzer::leerNum(){ //LECTURA DE NUMEROS
 
                             if (pos < (int)tokens.size() && tokens[pos].tipo == TokenType::STRING) {
                                 nuevoMedico.codigo = tokens[pos].lexema;
+                                qDebug() << "SE AGREGO CODIGO DE MEDICO";
                                 pos++;
                             }
                         }
