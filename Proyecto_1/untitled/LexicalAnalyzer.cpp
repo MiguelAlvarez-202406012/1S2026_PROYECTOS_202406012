@@ -128,6 +128,8 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
         return {TokenType::codigoMed,lexema,linIni,colIni};
     if(lexema == "CARDIOLOGIA")
         return {TokenType::CARDIOLOGIA,lexema,linIni,colIni};
+    if(lexema == "NEUROLOGIA")
+        return {TokenType::NEUROLOGIA,lexema,linIni,colIni};
     if(lexema == "PEDIATRIA")
         return {TokenType::PEDIATRIA,lexema,linIni,colIni};
     if(lexema == "CIRUGIA")
@@ -320,11 +322,15 @@ Token LexicalAnalyzer::leerNum(){ //LECTURA DE NUMEROS
                                 pos++;
                             }
 
-                            // El valor puede ser CARDIOLOGIA, NEUROLOGIA o STRING
+                            // El valor puede ser CARDIOLOGIA, NEUROLOGIA , etc...
                             if (pos < (int)tokens.size() &&
                                 tokens[pos].tipo == TokenType::STRING ||
                                 tokens[pos].tipo == TokenType::CARDIOLOGIA ||
-                                tokens[pos].tipo == TokenType::NEUROLOGIA) {
+                                tokens[pos].tipo == TokenType::NEUROLOGIA||
+                                tokens[pos].tipo == TokenType::PEDIATRIA||
+                                tokens[pos].tipo == TokenType::CIRUGIA||
+                                tokens[pos].tipo == TokenType::MEDICINA_GENERAL ||
+                                tokens[pos].tipo == TokenType::ONCOLOGIA){
                                 nuevoMedico.especialidad = tokens[pos].lexema; //ASIGNA LA ESPECIALIDAD
                                 pos++;
                             }

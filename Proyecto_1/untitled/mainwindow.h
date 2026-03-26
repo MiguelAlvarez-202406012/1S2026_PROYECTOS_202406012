@@ -26,6 +26,14 @@ private slots: //todo los metodos que responden eventos
     void abrirReporte2();
     void abrirReporte3();
     void abrirReporte4();
+    void abrirReporte5(); //TOKENS
+
+
+    // RETORNO DE VALORES
+    int returnMeds();
+    int returnPacient();
+    int returnCita();
+
 
 private:
 
@@ -43,6 +51,7 @@ private:
     QString reportMed(); // EL MEDICO Y SU TIPO DE CARGA
     QString citasReport(); //REPORTE DE CITAS Y POSIBLES CONFLICTOS
     QString hospitalStats(); // REPORTE GENERAL (EASIEST)
+    QString lexicalErrors();
 
     // Panel izquierdo - editor
     QTextEdit    *editorTexto;
@@ -62,6 +71,7 @@ private:
     QPushButton  *btnReporte2;
     QPushButton  *btnReporte3;
     QPushButton  *btnReporte4;
+    QPushButton  *btnReporte5;
 
     QString archivoActual;
 
@@ -69,6 +79,7 @@ private:
     void setupTablaTokens();
     void setupTablaErrores();
     void aplicarEstilos();
+    void imprimirConsola();
 
     //futuros void
 

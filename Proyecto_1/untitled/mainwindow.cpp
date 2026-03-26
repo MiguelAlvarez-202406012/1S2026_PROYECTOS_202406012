@@ -16,7 +16,8 @@
 #include <QDateTime>
 #include "LexicalAnalyzer.h"
 #include <string>
-
+#include <iostream>
+#include <set>
 #include <QMessageBox> //POPUP
 #include <QFile>//GENERAR
 #include <QTextStream>//OUTPUT O INPUT
@@ -24,6 +25,8 @@
 #include <QDateTime>
 #include <QDir>
 
+
+int conflicts;
 
 //INTERFAZ GRAFICA PARA EL ANALIZADOR
 //INTERFAZ INICIAL
@@ -99,8 +102,9 @@ void MainWindow::setupUI() {
     btnReporte2 = new QPushButton("Carga\nMedicos"); //DEBUGER
     btnReporte3 = new QPushButton("Agenda\nde Citas");
     btnReporte4 = new QPushButton("Estadistico\nGeneral");
+    btnReporte5 = new QPushButton("Errores\nLexicos");
 
-    for (auto *btn : {btnReporte1, btnReporte2, btnReporte3, btnReporte4}) {
+    for (auto *btn : {btnReporte1, btnReporte2, btnReporte3, btnReporte4,btnReporte5}) {
         btn->setEnabled(false);
         btn->setMinimumHeight(55);
         layoutReportes->addWidget(btn);
@@ -123,6 +127,8 @@ void MainWindow::setupUI() {
     connect(btnReporte2, &QPushButton::clicked, this, &MainWindow::abrirReporte2);
     connect(btnReporte3, &QPushButton::clicked, this, &MainWindow::abrirReporte3);
     connect(btnReporte4, &QPushButton::clicked, this, &MainWindow::abrirReporte4);
+    connect(btnReporte5, &QPushButton::clicked, this, &MainWindow::abrirReporte5);
+
 }
 
 void MainWindow::setupTablaTokens() {
@@ -149,16 +155,16 @@ void MainWindow::setupTablaErrores() {
 void MainWindow::aplicarEstilos() {
     setStyleSheet(R"(
         QMainWindow {
-            background-color: #1e1e2e;
+            background-color: #CCD3D9;
         }
         QWidget {
-            background-color: #1e1e2e;
+            background-color: #FFFFFF;
             color: #cdd6f4;
             font-family: 'Segoe UI', sans-serif;
             font-size: 13px;
         }
         QGroupBox {
-            border: 1px solid #45475a;
+            border: 1px solid #6CCCEB;
             border-radius: 6px;
             margin-top: 8px;
             padding-top: 8px;
@@ -169,47 +175,49 @@ void MainWindow::aplicarEstilos() {
             subcontrol-origin: margin;
             left: 10px;
             padding: 0 4px;
+            color: #000000;
+
         }
         QPushButton {
-            background-color: #313244;
-            color: #cdd6f4;
-            border: 1px solid #45475a;
+            background-color: #739194;
+            color: #FFFFFF;
+            border: 1px solid #175A61;
             border-radius: 6px;
             padding: 7px 16px;
             font-weight: bold;
         }
         QPushButton:hover {
-            background-color: #45475a;
-            border-color: #89b4fa;
+            background-color: #10B08B;
+            border-color: #185446;
         }
         QPushButton:pressed {
-            background-color: #89b4fa;
-            color: #1e1e2e;
+            background-color: #89CDFA;
+            color: #000000;
         }
         QPushButton:disabled {
-            background-color: #27273a;
-            color: #585b70;
-            border-color: #313244;
+            background-color: #A6BFBD;
+            color: #000000;
+            border-color: #A6BFBD;
         }
         QTextEdit {
-            background-color: #181825;
+            background-color: #8CABAB;
             border: 1px solid #45475a;
             border-radius: 4px;
-            color: #cdd6f4;
+            color: #000000;
         }
         QTableWidget {
-            background-color: #181825;
+            background-color: #8CABAB;
             gridline-color: #313244;
             border: 1px solid #45475a;
             border-radius: 4px;
-            color: #cdd6f4;
+            color: #000000;
         }
         QTableWidget::item:selected {
             background-color: #45475a;
         }
         QHeaderView::section {
-            background-color: #313244;
-            color: #89b4fa;
+            background-color: #31585E;
+            color: #000000;
             padding: 6px;
             border: none;
             font-weight: bold;
@@ -219,21 +227,21 @@ void MainWindow::aplicarEstilos() {
             border-radius: 4px;
         }
         QTabBar::tab {
-            background-color: #313244;
-            color: #cdd6f4;
+            background-color: #436D75;
+            color: #000000;
             padding: 8px 18px;
             border-top-left-radius: 4px;
             border-top-right-radius: 4px;
         }
         QTabBar::tab:selected {
-            background-color: #89b4fa;
+            background-color: #8BB0C4;
             color: #1e1e2e;
             font-weight: bold;
         }
         QStatusBar {
-            background-color: #181825;
-            color: #a6e3a1;
-            border-top: 1px solid #313244;
+            background-color: #D6D6D6;
+            color: #000000;
+            border-top: 1px solid #1F1F1F;
         }
     )");
 
@@ -329,7 +337,7 @@ void MainWindow::analizarArchivo() { //ALTERACION
         tablaErrores->setItem(i, 5, new QTableWidgetItem(QString::number(e.columna)));
     }
 
-    for (auto *btn : {btnReporte1, btnReporte2, btnReporte3, btnReporte4})
+    for (auto *btn : {btnReporte1, btnReporte2, btnReporte3, btnReporte4,btnReporte5})
         btn->setEnabled(true);
 
     tabResultados->setCurrentIndex(0);
@@ -344,6 +352,170 @@ void MainWindow::analizarArchivo() { //ALTERACION
 /////////////////////////////// REPORTE: HIST CLIENTE ///////////////////////////////////////////////////////////////////////////
 
 QString MainWindow::clientHist(){ //CREAR HTML DE HISTORIAL DE PACIENTES
+    //SEGUN EL NOMBRE, DIAGNOSTICO Y TODAS ESAS COSAS
+
+
+    QString html = R"(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Médicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .fecha {
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #239923;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .ACTIVE{
+            background-color: #6596D6;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .UNK{
+            background-color: #E8C03C;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .CRIT{
+            background-color: #FF0000;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> HISTORIAL DE CLIENTES </h1>
+        <div class="fecha">
+            Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Edad</th>
+                    <th>Tipo \n Sangre</th>
+                    <th>Diagnostico </th>
+                    <th>Medicamento</th>
+                    <th>Intervalo de Dosis </th>
+                    <th>Estado </th>
+
+                </tr>
+            </thead>
+        <tbody>
+    )"; //tbody donde iran el contenido, Y EN ORDEN DE DECLARACION
+    //Iteracion para pacientes
+    for (size_t i = 0; i < pacientes.size(); i++) {
+        string currentCondition;
+        string currentMed;
+        string currentDosis;
+
+        //BUSCAR POR COINCIDENCIA
+
+        for (int d = 0; d < diagnosticos.size(); ++d) {
+            if(diagnosticos[d].nombre_p == pacientes[i].nombre){
+                //MISMO NOMBRE
+                 currentCondition = diagnosticos[d].condit;
+                 currentMed = diagnosticos[d].medicamento;
+                 currentDosis = diagnosticos[d].dosis;
+            }
+        }
+
+
+
+        html += "            <tr>\n";
+        html += "            <td>" + QString::fromStdString(pacientes[i].nombre) + "</td>\n"; //NOMBRE
+        html += "            <td>" + QString::fromStdString(pacientes[i].edad) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(pacientes[i].blood) + "</td>\n";
+        //REGISTRAR CONDICIONES
+        if(currentCondition.empty() ||currentCondition == ""){
+            html += "            <td>" + QString::fromStdString("SIN DIAGNOSTICOS") + "</td>\n";
+        }else{
+            html += "            <td>" + QString::fromStdString(currentMed) + "</td>\n";
+        }
+
+        //REGISTRAR MEDICAMENTOS
+        if(currentMed.empty() ||currentMed == ""){
+            html += "            <td>" + QString::fromStdString(" - ") + "</td>\n";
+        }else{
+            html += "            <td>" + QString::fromStdString(currentDosis) + "</td>\n";
+        }
+
+        //REGISTRAR INTERVALO
+        if(currentDosis.empty() ||currentDosis == ""){
+            html += "            <td>" + QString::fromStdString(" - ") + "</td>\n";
+        }else{ //POR EL MOMENTO
+            html += "            <td>" + QString::fromStdString(currentDosis) + "</td>\n";
+        }
+
+        //REGISTRAR ESTADO DE PACIENTE
+        if(currentDosis.empty() ||currentDosis == ""){
+            html += "            <td class='UNK'>" + QString::fromStdString("SIN DIAGNOSTICOS") + "</td>\n";
+        }else if (currentDosis == "DIARIA"){ //POR EL MOMENTO
+            html += "            <td class='CRIT'>" + QString::fromStdString("CRITICO") + "</td>\n";
+        }
+
+
+        html += "        </tr>\n";
+    }
+
+    html += R"(
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>
+    )";
+
+    return html;
 
 
 }
@@ -390,6 +562,10 @@ void MainWindow::abrirReporte1() { //GENERAR REPORTE PACIENTES
 /////////////////////////////// REPORTE: MEDICOS Y CARGA ///////////////////////////////////////////////////////////////////////////
 
 QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA EL CONTENEDOR DE MAINWINDOW.CPP
+
+//oi quiero descansar
+//A USAR SET
+
     QString html = R"(
 <!DOCTYPE html>
 <html lang="es">
@@ -428,11 +604,37 @@ QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA
             margin-top: 20px;
         }
         th {
-            background-color: #3498db;
+            background-color: #239923;
             color: white;
             padding: 12px;
             text-align: left;
         }
+
+        .low{
+            background-color: #6596D6;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .medium{
+            background-color: #30BF43;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .high{
+            background-color: #E8C03C;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .saturated{
+            background-color: #FF0000;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
         td {
             padding: 10px;
             border-bottom: 1px solid #ddd;
@@ -449,7 +651,7 @@ QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA
 </head>
 <body>
     <div class="container">
-        <h1>🏥 LISTADO DE MÉDICOS</h1>
+        <h1> LISTADO DE MÉDICOS POR ESPECIALIDAD</h1>
         <div class="fecha">
             Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
         </div>
@@ -457,23 +659,60 @@ QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA
         <table>
             <thead>
                 <tr>
-                    <th>#</th>
+
                     <th>Nombre del Médico</th>
-                    <th>Especialidad</th>
                     <th>Código</th>
+                    <th>Especialidad</th>
+                    <th>Citas \n Programadas</th>
+                    <th>Pacientes </th>
+                    <th>Carga </th>
+
                 </tr>
             </thead>
-            <tbody>
+        <tbody>
     )";
-
-    // Aquí deberías iterar sobre tus médicos
-    // Por ahora, mostramos datos de ejemplo
+    //Iteracion para medicos
     for (size_t i = 0; i < medicos.size(); i++) {
+
+        //! PARA CADA MEDICO ESTARAN ESTOS DATOS
+        int citasProg = 0; //DEFECTO
+        string carga_a = ""; //BAJA = 0 ,0 NORMAL = 3 , ALTA = 5 , SATURADA  5<
+        set<string> pacientesUnicos; //SET SE
+        int pacientesProg = 0; //DEFECTO
+        //! PARA CADA MEDICO ESTARAN ESTOS DATOS
+
+        for (size_t p = 0; p < cita.size() ; ++p) { //TERMINA EL RECORRIDO
+            //LECTURA PARA REVISAR QUE TIENE MEDICOS
+            if(medicos[i].nombre == cita[p].nombre_dr){
+                //SI ENCUENTRA UNA COINCIDENCIA
+                citasProg++;
+
+                pacientesUnicos.insert(cita[p].nombre_p); //SET ME AHORRO UN MONTON
+                //SET ES EL MALDITO GOAT
+            }
+            //REGISTRAR QUE EL PACIENTE YA HAYA SIDO CONTADO
+        }
+        pacientesProg = pacientesUnicos.size();
+        //AGREGAR A TABLA
         html += "        <tr>\n";
-        html += "            <td>" + QString::number(i + 1) + "</td>\n";
-        html += "            <td>" + QString::fromStdString(medicos[i].nombre) + "</td>\n";
-        html += "            <td>" + QString::fromStdString(medicos[i].especialidad) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(medicos[i].nombre) + "</td>\n"; //NOMBRE
         html += "            <td>" + QString::fromStdString(medicos[i].codigo) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(medicos[i].especialidad) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(to_string(citasProg)) + "</td>\n";
+        html += "            <td>" + QString::fromStdString(to_string(pacientesProg)) + "</td>\n";
+
+        //NIVEL DE CARGA
+
+        if(citasProg <= 1){
+            html += "            <td class='low'>" + QString::fromStdString("BAJA") + "</td>\n";
+        }else if(citasProg >= 3 && citasProg < 5){
+            html += "            <td class='medium'>" + QString::fromStdString("NORMAL") + "</td>\n";
+        }else if(citasProg >= 5 && citasProg < 8){
+            html += "            <td class='high'>" + QString::fromStdString("ALTA") + "</td>\n";
+        }else if(citasProg > 8){
+            html += "            <td class='saturated'>" + QString::fromStdString("SATURADA") + "</td>\n";
+        }
+
         html += "        </tr>\n";
     }
 
@@ -481,9 +720,6 @@ QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA
             </tbody>
         </table>
 
-        <div class="total">
-            Total de médicos: )" + QString::number(medicos.size()) + R"(
-        </div>
     </div>
 </body>
 </html>
@@ -541,6 +777,170 @@ QString MainWindow::citasReport(){ //HTML CITAS
      //EN LA GENERACION DE REPORTE SE REALIZARA LA INSPECCION DE SI EXISTEN DATOS QUE COINCIDEN O NO
 
 
+     QString html = R"(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Médicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .fecha {
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #239923;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .confirm{
+            background-color: #239923;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .pending{
+            background-color: #E8C03C;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .conflict{
+            background-color: #FF0000;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .total {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> AGENDA DE CITAS</h1>
+        <div class="fecha">
+            Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Paciente</th>
+                    <th>Medico \n Encargado</th>
+                    <th>Especialidad </th>
+                    <th>Estado </th>
+
+                </tr>
+            </thead>
+        <tbody>
+    )";
+     //Iteracion para citas
+     for (size_t i = 0; i < cita.size(); i++) {
+
+         string especialidad;
+         bool hasConflict = false;
+
+         for(size_t d = 0 ; d < medicos.size(); d++){
+             if(medicos[d].nombre == cita[i].nombre_dr){
+                 especialidad = medicos[d].especialidad;
+             }
+         }
+
+         //validar conflcitos
+         for(size_t c = 0 ; c< cita.size();c++){
+             if(i != c){ //compara las demas excepto a la cita actual
+
+                 if(cita[i].nombre_dr == cita[c].nombre_dr &&
+                     cita[i].fecha == cita[c].fecha && // RECORRE UN FOR APARTE PARA REVISAR QUE NO HAYAN CONFLCITOS
+                     cita[i].hora == cita[c].hora){
+                     hasConflict = true;
+                     conflicts++;
+                     break;
+                 }
+             }
+         }
+
+
+         //AGREGAR A TABLA
+         html += "        <tr>\n";
+         html += "            <td>" + QString::fromStdString(cita[i].fecha) + "</td>\n"; //NOMBRE
+         html += "            <td>" + QString::fromStdString(cita[i].hora) + "</td>\n";
+         html += "            <td>" + QString::fromStdString(cita[i].nombre_p) + "</td>\n";
+         html += "            <td>" + QString::fromStdString(cita[i].nombre_dr) + "</td>\n";
+         html += "            <td>" + QString::fromStdString(especialidad) + "</td>\n";
+
+
+         //CITAS CON CONFLICTOS
+         if(hasConflict){
+             html += "            <td class='conflict'>" + QString::fromStdString("CONFLICTO") + "</td>\n";
+         }if(cita[i].fecha.empty() ||
+             cita[i].fecha == "" ||
+             cita[i].hora == "" ||
+             cita[i].hora.empty()){
+             html += "            <td class='pending'>" + QString::fromStdString("PENDIENTE") + "</td>\n";
+         }else{
+             html += "            <td class='confirm'>" + QString::fromStdString("CONFIRMADO") + "</td>\n";
+         }
+
+
+         html += "        </tr>\n";
+     }
+
+     html += R"(
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>
+    )";
+
+     return html;
+
+
 }
 
 void MainWindow::abrirReporte3() { //REPORTE DE CITAS
@@ -585,7 +985,196 @@ void MainWindow::abrirReporte3() { //REPORTE DE CITAS
 
 /////////////////////////////// REPORTE: GENERAL HOSPITAL ///////////////////////////////////////////////////////////////////////////
 
+int MainWindow::returnMeds(){
+    return medicos.size();
+}
+
+int MainWindow::returnPacient(){
+    return pacientes.size();
+}
+
+int MainWindow::returnCita(){
+    return cita.size();
+}
+
+
 QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
+
+
+    QString html = R"(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Médicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .fecha {
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #239923;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .low{
+            background-color: #6596D6;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .medium{
+            background-color: #30BF43;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .high{
+            background-color: #E8C03C;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .saturated{
+            background-color: #FF0000;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .total {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>REPORTE GENERAL HOSPITAL</h1>
+        <div class="fecha">
+            Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
+        </div>
+
+        <h2> SECCION A: INDICADOR CALVE DE HOSPITAL</h2>
+        <table>
+            <thead>
+                <tr>
+
+                    <th>Indicador</th>
+                    <th>Valor</th>
+
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>NOMBRE HOSPITAL</td>
+                    <td>)" + "HOSPITAL SAN CARLOS DE GUATEMALA" + R"(</td>
+                </tr>
+
+                <tr>
+                    <td>PACIENTES REGISTRADOS</td>
+                    <td>)" + QString::number(returnPacient()) + R"(</td>
+                </tr>
+                <tr>
+                    <td>MEDICOS REGISTRADOS</td>
+                    <td>)" + QString::number(returnMeds()) + R"(</td>
+                </tr>
+                <tr>
+                    <td>CITAS REGISTRADAS</td>
+                    <td>)" + QString::number(returnCita()) + R"(</td>
+                </tr>
+                <tr>
+                    <td>CITAS CON CONFLICTOS</td>
+                    <td>)" + QString::number(conflicts) + R"(</td>
+                </tr>
+                <tr>
+                    <td>PACIENTES CON DIAGNOSTICOS ACTIVOS</td>
+                    <td>)" + "NA" + R"(</td>
+                </tr>
+                <tr>
+                    <td>MEDICAMENTO CON MAS PREESCRITURAS</td>
+                    <td>)" + "NA" + R"(</td>
+                </tr>
+                <tr>
+                    <td>ESPECIALIDAD CON MAYOR CARGA DE CITAS</td>
+                    <td>)" + "NA" + R"(</td>
+                </tr>
+                <tr>
+                    <td>EDAD PROMEDIO DE PACIENTES</td>
+                    <td>)" + "NA" + R"(</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+
+
+
+
+        <table>
+            <thead>
+                <tr>
+
+                    <th>Especialidad</th>
+                    <th>Medicos</th>
+                    <th>Citas</th>
+                    <th>Pacientes</th>
+                    <th>Ocupacion </th>
+
+                </tr>
+            </thead>
+        <tbody>
+    )";
+    //Contenido General
+
+
+    html += R"(
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>
+    )";
+
+    return html;
 
 
 }
@@ -616,6 +1205,151 @@ void MainWindow::abrirReporte4() { // REPORTE GENERAL
 
 
         QString htmlContents = hospitalStats(); //genera el reporte con datos
+        QFile archivo(path); //guarda el archivo
+        if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&archivo);
+            out << htmlContents;
+            archivo.close();
+            //POPUP
+            QMessageBox::information(this, "Historial Pacientes!","Reporte de Historial de Pacientes Generado correctamente correctamente.");
+
+        }else{
+            QMessageBox::information(this, "ERROR, Historial Pacientes!","Ocurrio un error al GENERAR el archivo");
+        }
+    }
+
+}
+
+
+QString MainWindow::lexicalErrors(){ //GENERACION DE HTML GENERAL HOSPITAL
+
+
+    QString html = R"(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Médicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .fecha {
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #611111;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .total {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ERRORES LEXICOS</h1>
+        <div class="fecha">
+            Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
+        </div>
+
+
+        <table>
+            <thead>
+                <tr>
+
+                    <th>No.</th>
+                    <th>Lexema Intro.</th>
+                    <th>Error</th>
+                    <th>Descripcion</th>
+                    <th>Linea </th>
+                    <th>Columna </th>
+                    <th>Gravedad </th>
+
+                </tr>
+            </thead>
+        <tbody>
+    )";
+    //Iteracion para Errores lexicos
+
+
+    html += R"(
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>
+    )";
+
+    return html;
+
+
+}
+
+void MainWindow::abrirReporte5() { // REPORTE GENERAL
+
+    //GENERAR REPORTE PACIENTES
+    //REPORTE DE CITAS
+
+    //GENERAR CITAS
+    qInfo() << "Generando reporte de TOKENS";
+
+    if (archivoActual.isEmpty()) {
+        qWarning() << "ERROR: No hay archivo cargado";
+        QMessageBox::warning(this, "Error", "Primero carga un archivo .med");
+        return;
+    }
+
+    if(!archivoActual.isEmpty()){
+        QString ruta = QFileInfo(archivoActual).absolutePath();
+        QString path = ruta + "/reporte_errorLexico.html"; //Ruta donde se almacenara
+
+        QDir dir(ruta);
+        if(!dir.exists()){
+            QMessageBox::critical(this, "Error", "La ruta: " + ruta + " No existe");
+            return; //defunde la fucnbion
+        }
+
+
+        QString htmlContents = lexicalErrors(); //genera el reporte con datos
         QFile archivo(path); //guarda el archivo
         if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
             QTextStream out(&archivo);
