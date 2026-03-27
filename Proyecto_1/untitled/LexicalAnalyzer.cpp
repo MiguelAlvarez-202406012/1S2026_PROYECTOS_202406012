@@ -28,7 +28,7 @@ char LexicalAnalyzer::actual() {
 
 char LexicalAnalyzer::avanzar() {
     //FUNCION PARA MOVER A LA SIGUENTE FILA
-    char c = actual(); //trae la posicion actual
+    char c = actual(); //trae el valor de la posicion actual
     pos++; //incrementa la posicion actual
     if (c == '\n') { linea++; columna = 1; } //si es un salto de linea
     else           { columna++; }
@@ -105,8 +105,6 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
     }
 
     // Tabla de palabras reservadas (por ahora solo HOSPITAL)
-
-
     if (lexema == "HOSPITAL")
         return { TokenType::HOSPITAL, lexema, linIni, colIni };
     //CASOS
@@ -254,7 +252,7 @@ Token LexicalAnalyzer::leerNum(){ //LECTURA DE NUMEROS
         if (t.tipo != TokenType::DESCONOCIDO)
             tokens.push_back(t);
     }
-     //Parseo de Medicos, GENERA LOS TOKENS PARA MEDICO
+     //Parseo de Medicos, GENERA LOS TOKENS PARA LOS VECTORES
     int posTok = 0;
     while(posTok < (int)tokens.size()){
         if(tokens[posTok].tipo == TokenType::MEDICOS){
@@ -274,14 +272,6 @@ Token LexicalAnalyzer::leerNum(){ //LECTURA DE NUMEROS
         }
 
     }
-    //paseo pacientes
-
-
-
-    //parseo citas
-
-
-    //paseo Diagnostico
 
     return tokens;//retorno
 }

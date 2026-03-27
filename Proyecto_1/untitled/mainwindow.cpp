@@ -503,6 +503,10 @@ QString MainWindow::clientHist(){ //CREAR HTML DE HISTORIAL DE PACIENTES
             html += "            <td class='UNK'>" + QString::fromStdString("SIN DIAGNOSTICOS") + "</td>\n";
         }else if (currentDosis == "DIARIA"){ //POR EL MOMENTO
             html += "            <td class='CRIT'>" + QString::fromStdString("CRITICO") + "</td>\n";
+        }else if (currentDosis == "CADA_12_HORAS" ||
+                   currentDosis == "CADA_8_HORAS" ||
+                   currentDosis == "SEMANAL"){ //POR EL MOMENTO
+            html += "            <td class='ACTIVE'>" + QString::fromStdString("ACTIVO") + "</td>\n";
         }
 
 
@@ -666,7 +670,7 @@ QString MainWindow::reportMed(){ //GENERAR HTML PARA REPORTE MEDICOS (TEST), USA
                     <th>Nombre del Médico</th>
                     <th>Código</th>
                     <th>Especialidad</th>
-                    <th>Citas \n Programadas</th>
+                    <th>Citas Programadas</th>
                     <th>Pacientes </th>
                     <th>Carga </th>
 
@@ -1356,7 +1360,7 @@ QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
             Fecha de generación: )" + QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss") + R"(
         </div>
 
-        <h2> SECCION A: INDICADOR CALVE DE HOSPITAL</h2>
+        <h2> INDICADOR CALVE DE HOSPITAL</h2>
         <table>
             <thead>
                 <tr>
@@ -1408,6 +1412,8 @@ QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
 
             </tbody>
         </table>
+
+        <h2> POR ESPECIALIDAD </h2>
 
         <table>
             <thead>
@@ -1608,7 +1614,7 @@ QString MainWindow::lexicalErrors(){ //GENERACION DE HTML GENERAL HOSPITAL
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Médicos</title>
+    <title>Reporte de Errores Lexicos</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
