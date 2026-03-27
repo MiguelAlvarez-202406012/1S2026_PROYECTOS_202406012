@@ -24,6 +24,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QDir>
+#include <QRegularExpression>
 
 
 int conflicts;
@@ -1126,6 +1127,141 @@ string MainWindow::mayorCarga(){
 
     return "DESCONOCIDO";
 }
+QString MainWindow::clearCorrupted(const string& texto){
+    QString result = QString::fromStdString(texto);
+
+
+    result.replace("\"", "\\\"");
+    result.replace("\\", "\\\\");
+    result.replace("\n", "\\n");
+    result.replace("\r", "");
+    result.remove(QRegularExpression("[\\x00-\\x1F\\x7F]"));
+
+    return result;
+
+}
+
+QString MainWindow::dotFile(){
+    QString dot = "digraph Hospital {\n";
+    dot += "    // Configuración global\n";
+    dot += "    rankdir=TB;\n";
+    dot += "    splines=ortho;\n";
+    dot += "    nodesep=0.5;\n";
+    dot += "    ranksep=0.8;\n";
+    dot += "    node [fontname=\"Arial\", fontsize=10];\n";
+    dot += "    edge [fontname=\"Arial\", fontsize=8];\n\n";
+    dot += "    // Encoding\n";
+    dot += "    charset=\"UTF-8\";\n\n";
+    //main
+    dot += "    // Nodo principal\n";
+    dot += "    Hospital [shape=ellipse, style=filled, fillcolor=lightgreen, fontsize=14];\n\n";
+    set<string> especialidades;
+    for (const auto& m : medicos) {
+        if (!m.especialidad.empty()) {
+            especialidades.insert(m.especialidad);
+        }
+    }
+
+    if (!especialidades.empty()) {
+        dot += "    // Especialidades\n";
+        dot += "    subgraph cluster_especialidades {\n";
+        dot += "        label=\"Especialidades\";\n";
+        dot += "        style=filled;\n";
+        dot += "        fillcolor=lightgray;\n";
+        dot += "        node [shape=ellipse, style=filled, fillcolor=lightyellow];\n\n";
+
+        for (const auto& esp : especialidades) {
+            QString espEscapado = clearCorrupted(esp);
+            dot += "        \"" + espEscapado + "\";\n";
+        }
+        dot += "    }\n\n";
+
+        for (const auto& esp : especialidades) {
+            QString espEscapado = clearCorrupted(esp);
+            dot += "    Hospital -> \"" + espEscapado + "\" [label=\"tiene\"];\n";
+        }
+        dot += "\n";
+    }
+
+    //!medicos
+    dot += "    // Médicos\n";
+    dot += "    subgraph cluster_medicos {\n";
+    dot += "        label=\"Médicos\";\n";
+    dot += "        style=filled;\n";
+    dot += "        fillcolor=aliceblue;\n";
+    dot += "        node [shape=box, style=filled];\n\n";
+
+    //!contar numero de citas
+    unordered_map<string, int> citasPorMedico;
+    for (const auto& c : cita) {
+        citasPorMedico[c.nombre_dr]++;
+    }
+
+    for (const auto& m : medicos) {
+        int numCitas = citasPorMedico[m.nombre];
+        QString color;
+
+        if (numCitas <= 1) {
+            color = "lightgreen";
+        } else if (numCitas <= 3) {
+            color = "lightyellow";
+        } else if (numCitas <= 6) {
+            color = "orange";
+        } else {
+            color = "lightcoral";
+        }
+
+        QString nombreEscapado = clearCorrupted(m.nombre);
+        QString especialidadEscapada = clearCorrupted(m.especialidad);
+
+        dot += "        \"" + nombreEscapado + "\" ";
+        dot += "[label=\"" + nombreEscapado + "\\n" + especialidadEscapada +
+               "\\n(" + QString::number(numCitas) + " citas)\", ";
+        dot += "fillcolor=" + color + "];\n";
+    }
+    dot += "    }\n\n";
+
+    //!ESPECIALIDADES
+    for (const auto& m : medicos) {
+        if (!m.especialidad.empty()) {
+            QString espEscapado = clearCorrupted(m.especialidad);
+            QString nombreEscapado = clearCorrupted(m.nombre);
+            dot += "    \"" + espEscapado + "\" -> \"" + nombreEscapado + "\" [label=\"pertenece\"];\n";
+        }
+    }
+    dot += "\n";
+
+    //!PACIENTES
+    set<string> pacientesUnicos;
+    for (const auto& c : cita) {
+        pacientesUnicos.insert(c.nombre_p);
+    }
+
+    if (!pacientesUnicos.empty()) {
+        dot += "    // Pacientes\n";
+        dot += "    subgraph cluster_pacientes {\n";
+        dot += "        label=\"Pacientes\";\n";
+        dot += "        style=filled;\n";
+        dot += "        fillcolor=seashell;\n";
+        dot += "        node [shape=ellipse, style=filled, fillcolor=lightgreen];\n\n";
+
+        for (const auto& p : pacientesUnicos) {
+            QString pacienteEscapado = clearCorrupted(p);
+            dot += "        \"" + pacienteEscapado + "\";\n";
+        }
+        dot += "    }\n\n";
+        for (const auto& c : cita) {
+            QString drEscapado = clearCorrupted(c.nombre_dr);
+            QString pacienteEscapado = clearCorrupted(c.nombre_p);
+            dot += "    \"" + drEscapado + "\" -> \"" + pacienteEscapado + "\" [label=\"cita\"];\n";
+        }
+        dot += "\n";
+    }
+
+    dot += "}\n";
+
+    return dot;
+}
 
 QString MainWindow::hospitalStats(){ //GENERACION DE HTML GENERAL HOSPITAL
 
@@ -1406,8 +1542,9 @@ void MainWindow::abrirReporte4() { // REPORTE GENERAL
     //GENERAR REPORTE PACIENTES
     //REPORTE DE CITAS
 
-    //GENERAR CITAS
-    qInfo() << "Generando reporte Historial Pacientes ";
+    //GENERAR REPORE
+    qInfo() << "Generando reporte General Hospital + Archivo.dot ";
+
 
     if (archivoActual.isEmpty()) {
         qWarning() << "ERROR: No hay archivo cargado";
@@ -1416,8 +1553,10 @@ void MainWindow::abrirReporte4() { // REPORTE GENERAL
     }
 
     if(!archivoActual.isEmpty()){
+
         QString ruta = QFileInfo(archivoActual).absolutePath();
-        QString path = ruta + "/reporte_g_hospital.html"; //Ruta donde se almacenara
+        QString dotPath = ruta + "/jerarquiaHospital.dot"; //Ruta donde se almacenara el archivo.dot
+        QString RePath = ruta + "/reporte_g_hospital.html"; //Ruta donde se almacenara reporte de Hospital
 
         QDir dir(ruta);
         if(!dir.exists()){
@@ -1425,9 +1564,10 @@ void MainWindow::abrirReporte4() { // REPORTE GENERAL
             return; //defunde la fucnbion
         }
 
-
+        QString dotContents = dotFile();
         QString htmlContents = hospitalStats(); //genera el reporte con datos
-        QFile archivo(path); //guarda el archivo
+        QFile archivo(RePath); //guarda el archivo
+        QFile archivoDot(dotPath); //guarda archivo dot
         if(archivo.open(QIODevice::WriteOnly | QIODevice::Text)){
             QTextStream out(&archivo);
             out << htmlContents;
@@ -1438,6 +1578,22 @@ void MainWindow::abrirReporte4() { // REPORTE GENERAL
         }else{
             QMessageBox::information(this, "ERROR, Historial Pacientes!","Ocurrio un error al GENERAR el archivo");
         }
+
+        if(archivoDot.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&archivoDot);
+            out << dotContents;
+            archivoDot.close();
+            //POPUP
+            QMessageBox::information(this, "Jerarquia de hospital!","Reporte de Jerarquia de hospital Generado correctamente correctamente.");
+
+        }else{
+            QMessageBox::information(this, "ERROR, Jerarquia de hospital!","Ocurrio un error al GENERAR el archivo de \n Jerarquia de hospital ");
+        }
+
+
+
+
+
     }
 
 }

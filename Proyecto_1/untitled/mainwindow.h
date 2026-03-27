@@ -26,7 +26,7 @@ private slots: //todo los metodos que responden eventos
     void abrirReporte2();
     void abrirReporte3();
     void abrirReporte4();
-    void abrirReporte5(); //TOKENS
+    void abrirReporte5(); //TOKENS //GENERAR REPORTE
 
 
     // RETORNO DE VALORES
@@ -54,10 +54,13 @@ private:
 
     //REPORTES
     QString clientHist(); //HISTORIAL DE PACIENTES
+
     QString reportMed(); // EL MEDICO Y SU TIPO DE CARGA
     QString citasReport(); //REPORTE DE CITAS Y POSIBLES CONFLICTOS
     QString hospitalStats(); // REPORTE GENERAL (EASIEST)
     QString lexicalErrors();
+    QString dotFile();
+    QString clearCorrupted(const string& texto); //limpiar comillas pedorras
 
     // Panel izquierdo - editor
     QLabel    *tituloPrograma;
