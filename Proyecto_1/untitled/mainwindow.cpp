@@ -277,6 +277,8 @@ void MainWindow::cargarArchivo() {
         return;
     }
 
+
+
     QTextStream in(&archivo);
     editorTexto->setText(in.readAll());
     archivo.close();

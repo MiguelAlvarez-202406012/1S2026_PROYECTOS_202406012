@@ -28,7 +28,6 @@ struct Citas{
     string fecha;
     string hora;
 
-
 };
 
 struct Diagnostic{
@@ -55,21 +54,18 @@ public:
     explicit LexicalAnalyzer(const string& fuente); //Constructor OBLICATORIO
     //Constante para que no cambie
     //Contenedores ALMACENARAN LOS DATOS AL LEER EL DOCUMENTO
+    //LUEGO SE DECLARAN OTROS VECTORES PARA MAIN WINDOW CON EL MISMO VALOR
     vector<Medic> medStorage; //
     vector<Citas> citStorage; //
-    vector<Patient> patStorage;
-    vector<Diagnostic> diagStorage;
-
-
+    vector<Patient> patStorage; //
+    vector<Diagnostic> diagStorage; //
     // Retorna todos los tokens del archivo
-    vector<Token> tokenize(); //declara vector para tokenizacion
-
+    vector<Token> tokenize(); //declara vector para tokenizacion y mostrar en tablas
     // Errores acumulados durante el análisis
-
     vector<ErrorLexico> errores;
 
 private:
-    //METODOS Y VARIABLES ABSTRACTAS
+    //METODOS Y VARIABLES ABSTRACTAS, solo se declara su existencia pero no se definen
     string codigo;   // Contenido completo del archivo
     int pos;         // Posición actual en el string
     int linea;       //EN QUE LINEA
@@ -82,6 +78,7 @@ private:
     Token leerString(); //Lectura de strings
     Token leerNum(); //lectura de numeros o guiones
     void  registrarError(const string& lexema,const string& tipo,const string& desc);
+    //ENVIA NECESITA EL LEXEMA EL TIPO Y LO ENVIA AL VECTOR DE ERRORLEXICO
 
     //REGISTRAR DATOS EN LEXICALANALYZER
     void registrarMedicos(const vector<Token>& tokens, int& pos);

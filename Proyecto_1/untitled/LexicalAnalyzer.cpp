@@ -45,7 +45,6 @@ void LexicalAnalyzer::saltarBlancos() { //salta espacios en blanco
 void LexicalAnalyzer::registrarError(const string& lex,  const string& tipo,const string& desc) {
     //llama al vector de errores y mete el error lexico
     errores.push_back({ lex, tipo, desc, linea, columna });
-
 }
 
 
@@ -100,11 +99,12 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
 
     // Leer todos los caracteres alfanuméricos o guión bajo
     while (pos < (int)codigo.size() &&
+           //mientras la posciion sea inferior al tamaño del codigo y sea indefinido o _
            (std::isalnum((unsigned char)actual()) || actual() == '_')) {
         lexema += avanzar();
     }
 
-    // Tabla de palabras reservadas (por ahora solo HOSPITAL)
+    // Tabla de palabras reservadas, al leerla retorna un Token del tipo leido por el lexema
     if (lexema == "HOSPITAL")
         return { TokenType::HOSPITAL, lexema, linIni, colIni };
     //CASOS
@@ -138,8 +138,6 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
         return {TokenType::ONCOLOGIA,lexema,linIni,colIni};
 
 
-
-
     //MEDICO
     if(lexema == "cita" )
         return {TokenType::cita,lexema,linIni,colIni};
@@ -169,23 +167,18 @@ Token LexicalAnalyzer::leerPalabraReservada() { //RETORNA UN TOKEN
         return {TokenType::medicamento,lexema,linIni,colIni};
     if(lexema == "dosis")
         return {TokenType::dosis,lexema,linIni,colIni};
-
     if(lexema == "DIARIA")
         return {TokenType::DIARIA,lexema,linIni,colIni};
-
     if(lexema == "CADA_8_HORAS")
         return {TokenType::CADA_8_HORAS,lexema,linIni,colIni};
-
     if(lexema == "CADA_12_HORAS")
         return {TokenType::CADA_12_HORAS,lexema,linIni,colIni};
-
     if(lexema == "SEMANAL")
         return {TokenType::SEMANAL,lexema,linIni,colIni};
 
 
 
-
-    // No es una palabra reservada conocida → error
+    // En caso que no sea una palabra reservada entonces se llama a registrar el error
     registrarError(lexema, "Token no reconocido",
                    "'" + lexema + "' no es una palabra reservada válida en MedLang.");
     return { TokenType::DESCONOCIDO, lexema, linIni, colIni };

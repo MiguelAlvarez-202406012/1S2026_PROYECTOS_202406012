@@ -9,6 +9,9 @@ using namespace std;
 
 //Utilizacion de :: para llamar los atributos,metodos,datos y vectores de las clases
 //TODOS LOS TIPOS
+
+//se declaran para ser leidos por el lexicalAnalyzer y poder generar esturctras de tokens
+
 enum class TokenType { //TODOS LOS TIPOS DE TOKENS
     // Palabra reservada raíz
     NUMERO,
@@ -64,7 +67,7 @@ enum class TokenType { //TODOS LOS TIPOS DE TOKENS
 };
 
 // Convierte el enum a string legible para la tabla y retorna EL TIPO DE STRING
-inline string tokenTypeToString(TokenType t) { //RETORNA
+inline string tokenTypeToString(TokenType t) { //RETORNA el tipo de string leido
     switch (t) {
         //SI NO INCLUYE COMILLAS ES UN TOKEN
         //de la clase::ValorDeLaClase
